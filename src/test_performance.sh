@@ -11,16 +11,18 @@
 evaluation_time=$1
 init_time=2
 
-echo "127.0.0.1 11001
-127.0.0.1 11002
-127.0.0.1 11003
-127.0.0.1 11004
-127.0.0.1 11005" >> membership
+echo "5
+1 127.0.0.1 11001
+2 127.0.0.1 11002
+3 127.0.0.1 11003
+4 127.0.0.1 11004
+5 127.0.0.1 11005
+5" > membership
 
 #start 5 processes
 for i in `seq 1 5`
 do
-    ./da_proc $i membership &
+    java Da_proc $i membership &
     da_proc_id[$i]=$!
 done
 
@@ -32,7 +34,7 @@ echo "Evaluating application for ${evaluation_time} seconds."
 for i in `seq 1 5`
 do
     if [ -n "${da_proc_id[$i]}" ]; then
-	kill -USR1 "${da_proc_id[$i]}"
+	kill -USR2 "${da_proc_id[$i]}"
     fi
 done
 

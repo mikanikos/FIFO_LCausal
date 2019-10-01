@@ -3,14 +3,18 @@ import java.net.*;
 
 public class UDP_Receiver extends Thread {
 
+//    public static boolean isListen() {
+//        return listen;
+//    }
+
+    public static void setListening(boolean listening) {
+        UDP_Receiver.listening = listening;
+    }
+
     private DatagramSocket socket;
     private Da_proc main_instance;
-    private static boolean listen = true;
+    private static boolean listening = true;
     private byte[] buffer = new byte[16];
-
-    public void setListen(boolean listen) {
-        this.listen = listen;
-    }
 
     public UDP_Receiver(Da_proc main_instance) throws IOException {
         this.socket = new DatagramSocket(main_instance.getProcesses().get(main_instance.getId()).getPort());
@@ -20,12 +24,12 @@ public class UDP_Receiver extends Thread {
 
     public void run() {
 
-        while (listen) {
+        while (listening) {
             try {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
                 System.out.println("Packet received");
-                Da_proc.logger.info("d " + new String(packet.getData(), 0, packet.getLength()));
+                OutputLogger.writeLog("d " + new String(packet.getData(), 0, packet.getLength()));
             }
             catch(IOException e) {
                 e.printStackTrace();

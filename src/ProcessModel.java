@@ -33,8 +33,8 @@ public class ProcessModel extends Thread {
 
 	private static void stopApp() {
 		System.out.println("Immediately stopping network packet processing");
-		Da_proc.receiver.setListen(false);
-		Da_proc.running = false;
+		Da_proc.receiver.setListening(false);
+		Da_proc.setRunning(false);
 
 		System.exit(0);
 	}
