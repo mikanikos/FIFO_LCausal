@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,7 +42,11 @@ public class Da_proc {
         main_instance.parse_membership(args[1]);
 
         // using java logging to output log file
-        fileHandler = new FileHandler("resources/da_proc_" + main_instance.id + ".out");
+
+        String fileName = "da_proc_" + main_instance.id + ".out";
+        File outputFile = new File(fileName);
+        outputFile.createNewFile();
+        fileHandler = new FileHandler(fileName);
         logger.addHandler(fileHandler);
         logger.setUseParentHandlers(false);
         fileHandler.setFormatter(new MyLogFormatter());
