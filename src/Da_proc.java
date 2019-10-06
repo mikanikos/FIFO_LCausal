@@ -45,9 +45,6 @@ public class Da_proc {
         main_instance.id = Integer.parseInt(args[0]);
         main_instance.parse_membership(args[1]);
 
-        // using java logging to output log file
-        OutputLogger outputLogger = new OutputLogger(main_instance.id);
-
         // start listening for incoming UDP packets
         receiver = new UDP_Receiver(main_instance);
         while(ProcessModel.wait_for_start) {
@@ -67,7 +64,7 @@ public class Da_proc {
                 sender = new UDP_Sender(p.ipAddress, p.port);
                 sender.send(main_instance.id + " " + seq_nr);
             }
-            outputLogger.writeLog("b " + seq_nr);
+            OutputLogger.writeLog("b " + seq_nr);
         }
 
         System.out.println("Done");

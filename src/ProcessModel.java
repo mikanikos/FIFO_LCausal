@@ -26,12 +26,12 @@ public class ProcessModel extends Thread {
 			try {
 				Thread.sleep(100);
 			} catch (Exception e){
-				//exception
+				// exception
 			}
 		}
 	}
 
-	private static void stopApp() {
+	private void stopApp() {
 		System.out.println("Immediately stopping network packet processing");
 		Da_proc.receiver.setListening(false);
 		Da_proc.setRunning(false);
@@ -39,7 +39,6 @@ public class ProcessModel extends Thread {
 		System.exit(0);
 	}
 
-	@SuppressWarnings("deprecation")
 	public static class SigHandlerUsr2 implements SignalHandler {
 		ProcessModel p;
 
@@ -51,11 +50,10 @@ public class ProcessModel extends Thread {
 		@Override
 		public void handle(Signal signal) {
 			System.out.format("Handling signal: %s\n", signal.toString());
-			this.p.wait_for_start = false;
+			ProcessModel.wait_for_start = false;
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public static class SigHandlerTerm implements SignalHandler {
 		ProcessModel p;
 
@@ -72,7 +70,6 @@ public class ProcessModel extends Thread {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public static class SigHandlerInt implements SignalHandler {
 		ProcessModel p;
 
