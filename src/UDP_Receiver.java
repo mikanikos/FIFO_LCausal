@@ -20,10 +20,15 @@ public class UDP_Receiver extends Thread {
 
         while (listening) {
             try {
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
+                DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
+            	socket.receive(receivePacket);
                 System.out.println("Packet received");
-                OutputLogger.writeLog("d " + new String(packet.getData(), 0, packet.getLength()));
+                OutputLogger.writeLog("d " + new String(receivePacket.getData(), 0, receivePacket.getLength()));
+                
+                // Acknowledgement packet back to sender     
+                InetAddress IPAddress = receivePacket.getAddress();
+                DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, IPAddress, receivePacket.getPort());
+                socket.send(sendPacket);
             }
             catch(IOException e) {
                 e.printStackTrace();

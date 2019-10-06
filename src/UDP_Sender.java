@@ -2,10 +2,11 @@ import java.io.IOException;
 import java.net.*;
 
 public class UDP_Sender {
-
+	
     private DatagramSocket socket;
     private InetAddress address;
     private int port;
+    Timer timer = new Timer(10000);
 
     public UDP_Sender(String ipAddress, int port) throws IOException {
         this.address = InetAddress.getByName(ipAddress);
@@ -16,10 +17,10 @@ public class UDP_Sender {
     public void send(String payload) {
         System.out.println("Sending packet");
         byte[] buffer = payload.getBytes();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
+        DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, address, port);
 
         try {
-            socket.send(packet);
+    		socket.send(sendPacket);
         }
         catch(IOException e) {
             e.printStackTrace();
@@ -28,4 +29,20 @@ public class UDP_Sender {
             socket.close();
         }
     }
+    
+    public boolean acknowledgement() throws Exception {
+    	boolean acknowledgement = false;
+    	byte[] buffer = new byte[16];
+		DatagramPacket recievePacket = new DatagramPacket(buffer, buffer.length);
+		while(!timer.isExpired()) {
+			try {
+				socket.receive(recievePacket);
+				acknowledgement = true;
+			} 
+			catch(IOException e) {
+				acknowledgement = false;
+            }
+		}
+		return acknowledgement;
+	}
 }

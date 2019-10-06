@@ -35,15 +35,19 @@ public class Da_proc {
         new ProcessModel();
     }
 
-    public static void main(String[] args) throws InterruptedException, IOException {
+    @SuppressWarnings("static-access")
+	public static void main(String[] args) throws InterruptedException, IOException {
 
         Da_proc main_instance = new Da_proc();
 
-        System.out.println("initializing");
+        System.out.println("Initializing");
 
         // parse arguments, including membership
         main_instance.id = Integer.parseInt(args[0]);
         main_instance.parse_membership(args[1]);
+        
+        // using java logging to output log file
+        OutputLogger outputLogger = new OutputLogger(main_instance.id);
 
         // start listening for incoming UDP packets
         receiver = new UDP_Receiver(main_instance);
@@ -60,11 +64,19 @@ public class Da_proc {
         UDP_Sender sender;
         int seq_nr;
         for (seq_nr = 1; seq_nr <= main_instance.numMessages && running; seq_nr++) {
-            for (Process  p : main_instance.processes.values()) {
+            for (Process  p : main_instance.processes.values()) {            	
                 sender = new UDP_Sender(p.ipAddress, p.port);
-                sender.send(main_instance.id + " " + seq_nr);
+                // Keep on sending the message until the acknowledgement is received
+                try {
+					while(!sender.acknowledgement()) {
+						sender.send(main_instance.id + " " + seq_nr);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
             }
-            OutputLogger.writeLog("b " + seq_nr);
+            // handle the output of processes
+            outputLogger.writeLog("b " + seq_nr);
         }
 
         System.out.println("Done");
