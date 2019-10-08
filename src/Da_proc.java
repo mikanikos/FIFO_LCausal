@@ -50,7 +50,8 @@ public class Da_proc {
         OutputLogger outputLogger = new OutputLogger(main_instance.id);
 
         // start listening for incoming UDP packets
-        receiver = new UDP_Receiver(main_instance);
+        int myPort = main_instance.getProcesses().get(main_instance.getId()).getPort();
+        receiver = new UDP_Receiver(myPort);
         while(ProcessModel.wait_for_start) {
             Thread.sleep(1000);
         }

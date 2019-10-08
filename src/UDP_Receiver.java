@@ -11,8 +11,8 @@ public class UDP_Receiver extends Thread {
     private static boolean listening = true;
     private byte[] buffer = new byte[16];
 
-    public UDP_Receiver(Da_proc main_instance) throws IOException {
-        this.socket = new DatagramSocket(main_instance.getProcesses().get(main_instance.getId()).getPort());
+    public UDP_Receiver(int port) throws IOException {
+        this.socket = new DatagramSocket(port);
         this.start();
     }
 
@@ -23,12 +23,16 @@ public class UDP_Receiver extends Thread {
                 DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
             	socket.receive(receivePacket);
                 System.out.println("Packet received");
-                OutputLogger.writeLog("d " + new String(receivePacket.getData(), 0, receivePacket.getLength()));
-                
+                String packet  = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                OutputLogger.writeLog("d " + packet);
+
+                Perfect_Receiver perfect_receiver = new Perfect_Receiver();
+                perfect_receiver.deliver(packet);
+
                 // Acknowledgement packet back to sender     
-                InetAddress IPAddress = receivePacket.getAddress();
-                DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, IPAddress, receivePacket.getPort());
-                socket.send(sendPacket);
+//                InetAddress IPAddress = receivePacket.getAddress();
+//                DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, IPAddress, receivePacket.getPort());
+//                socket.send(sendPacket);
             }
             catch(IOException e) {
                 e.printStackTrace();
