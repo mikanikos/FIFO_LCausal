@@ -85,6 +85,10 @@ public class Da_proc {
             Thread.sleep(1000);
         }
     }
+    
+    private void handle_message() {
+    	
+    }
 
     private void parse_membership(String filename) {
         String line = "";

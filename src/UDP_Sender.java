@@ -17,16 +17,18 @@ public class UDP_Sender {
     public void send(String payload) {
         System.out.println("Sending packet");
         byte[] buffer = payload.getBytes();
+        
         DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, address, port);
-
-        try {
-    		socket.send(sendPacket);
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            socket.close();
+        while(!timer.isExpired()) {
+	        try {
+	    		socket.send(sendPacket);
+	        }
+	        catch(IOException e) {
+	            e.printStackTrace();
+	        }
+	        finally {
+	            socket.close();
+	        }
         }
     }
     
