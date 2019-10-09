@@ -1,13 +1,20 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.*;
 
 public class OutputLogger {
 
     private static Logger logger = Logger.getLogger("MyLogger");;
     private static FileHandler fileHandler;
+    private static Lock loggerLock;
 
-    public OutputLogger (int id) throws IOException {
+    public static Lock getLoggerLock() {
+        return loggerLock;
+    }
+
+    public OutputLogger(int id) throws IOException {
         String fileName = "da_proc_" + id + ".out";
         File outputFile = new File(fileName);
         outputFile.createNewFile();
@@ -15,7 +22,7 @@ public class OutputLogger {
         logger.addHandler(fileHandler);
         logger.setUseParentHandlers(false);
         fileHandler.setFormatter(new MyLogFormatter());
-
+        loggerLock = new ReentrantLock();
     }
 
     public static void writeLog(String data) {

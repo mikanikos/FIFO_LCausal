@@ -17,27 +17,26 @@ public class UDP_Receiver extends Thread {
     }
 
     public void run() {
-
-        while (listening) {
-            try {
+        try {
+            while (listening) {
                 DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
-            	socket.receive(receivePacket);
+                socket.receive(receivePacket);
                 System.out.println("Packet received");
-                String packet  = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                OutputLogger.writeLog("d " + packet);
+                String packet = new String(receivePacket.getData(), 0, receivePacket.getLength());
 
-                Perfect_Receiver perfect_receiver = new Perfect_Receiver();
-                perfect_receiver.deliver(packet);
+                new Perfect_Receiver(packet);
 
-                // Acknowledgement packet back to sender     
+                //perfect_receiver.deliver(packet);
+
+                // Acknowledgement packet back to sender
 //                InetAddress IPAddress = receivePacket.getAddress();
 //                DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, IPAddress, receivePacket.getPort());
 //                socket.send(sendPacket);
             }
-            catch(IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            socket.close();
         }
-        socket.close();
     }
 }

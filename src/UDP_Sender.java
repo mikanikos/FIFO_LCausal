@@ -1,27 +1,22 @@
 import java.io.IOException;
 import java.net.*;
 
-public class UDP_Sender {
+public class UDP_Sender extends Thread {
 
     private DatagramSocket socket;
     private DatagramPacket packet;
 
-
-    public UDP_Sender(String ipAddress, int port, String message) throws IOException {
-        InetAddress address = InetAddress.getByName(ipAddress);
+    public UDP_Sender(ProcessData process, MessageData message) throws IOException {
         this.socket = new DatagramSocket();
-		byte[] buffer = message.getBytes();
-		this.packet = new DatagramPacket(buffer, buffer.length, address, port);
+        byte[] buffer = message.toString().getBytes();
+		this.packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(process.getIpAddress()), process.getPort());
+    }
 
-	}
-
-    public void send() {
-        try {
+    public void run() {
+    	try {
             socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            socket.close();
         }
     }
 }

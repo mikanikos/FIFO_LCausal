@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,19 +19,21 @@ public class Da_proc {
         Da_proc.running = running;
     }
 
-    public Map<Integer, Process> getProcesses() {
+    public Map<Integer, ProcessData> getProcesses() {
         return processes;
     }
 
     private int id;
     private int numProcesses;
     private int numMessages;
-    private Map<Integer, Process> processes;
+    public static Map<Integer, ProcessData> processes;
+
     public static UDP_Receiver receiver;
     private static boolean running = true;
 
     public Da_proc() {
-        this.processes = new HashMap<>();
+        this.processes = new HashMap<Integer, ProcessData>();
+        System.out.println(ManagementFactory.getRuntimeMXBean().getName());
         // set signal handlers
         new ProcessModel();
     }
@@ -47,7 +50,7 @@ public class Da_proc {
         main_instance.parse_membership(args[1]);
         
         // using java logging to output log file
-        OutputLogger outputLogger = new OutputLogger(main_instance.id);
+        new OutputLogger(main_instance.id);
 
         // start listening for incoming UDP packets
         int myPort = main_instance.getProcesses().get(main_instance.getId()).getPort();
@@ -56,7 +59,7 @@ public class Da_proc {
             Thread.sleep(1000);
         }
 
-        System.out.println("Broadcasting messages");
+        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
 
         // not sending to myself
         main_instance.processes.remove(main_instance.id);
@@ -65,30 +68,28 @@ public class Da_proc {
         UDP_Sender sender;
         int seq_nr;
         for (seq_nr = 1; seq_nr <= main_instance.numMessages && running; seq_nr++) {
-            for (Process  p : main_instance.processes.values()) {            	
-                sender = new UDP_Sender(p.ipAddress, p.port);
+            for (ProcessData p : main_instance.processes.values()) {
+                MessageData m = new MessageData(main_instance.id, seq_nr, false);
+                new Perfect_Sender(p, m);
+
                 // Keep on sending the message until the acknowledgement is received
-                try {
-					while(!sender.acknowledgement()) {
-						sender.send(main_instance.id + " " + seq_nr);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+//                try {
+//					while(!sender.acknowledgement()) {
+//						sender.send(main_instance.id + " " + seq_nr);
+//					}
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
             }
             // handle the output of processes
-            outputLogger.writeLog("b " + seq_nr);
+            OutputLogger.writeLog("b " + seq_nr);
         }
 
-        System.out.println("Done");
+        //System.out.println("Done");
 
         while(true) {
             Thread.sleep(1000);
         }
-    }
-    
-    private void handle_message() {
-    	
     }
 
     private void parse_membership(String filename) {
@@ -113,7 +114,7 @@ public class Da_proc {
                         }
                     }
                     else {
-                        processes.put(Integer.parseInt(fields[0]), new Process(fields[1], Integer.parseInt(fields[2])));
+                        processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
                     }
                 }
 
@@ -132,19 +133,5 @@ public class Da_proc {
                 System.out.println("Error in closing the buffer");
             }
         }
-    }
-
-    class Process {
-        public Process(String ipAddress, int port) {
-            this.ipAddress = ipAddress;
-            this.port = port;
-        }
-
-        public int getPort() {
-            return this.port;
-        }
-
-        private String ipAddress;
-        private int port;
     }
 }

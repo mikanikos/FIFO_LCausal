@@ -1,34 +1,64 @@
+import com.sun.xml.internal.ws.api.message.Message;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Perfect_Receiver {
+public class Perfect_Receiver extends Thread {
 
-    private Map<Integer, List<Integer>> delivered;
+    private static List<MessageData> delivered;
+    private static Lock deliveredLock;
+    private String message;
 
-    public Perfect_Receiver() {
-        this.delivered = new HashMap<>();
+    public Perfect_Receiver(String message) {
+        this.message = message;
+        delivered = new CopyOnWriteArrayList<>();
+        deliveredLock = new ReentrantLock();
+        this.start();
     }
 
+    public void run() {
+        String[] parsedMessage = message.split(" ");
+        int senderID = Integer.valueOf(parsedMessage[0]);
+        int seqID = Integer.valueOf(parsedMessage[1]);
+        boolean isAck = Boolean.valueOf(parsedMessage[2]);
 
-    // format of a message: "senderID seqID ackFlag"
-    public String deliver(String packet) throws IOException {
-        String[] parsedMessage = packet.split("_");
-        List<Integer> idsList = delivered.get(parsedMessage[0])
-        boolean alreadyReceived = false;
-        if (idsList == null) {
-            delivered.put(Integer.parseInt(parsedMessage[0]), new ArrayList<>());
-        }
-        if (!idsList.contains(Integer.parseInt(parsedMessage[1]))) {
-            idsList.add(Integer.parseInt(parsedMessage[1]));
+        MessageData m = new MessageData(senderID, seqID, isAck);
+        List<MessageData> deliveredCopy = getAtomicDelivered();
+
+        if (m.isAck()) {
+            Perfect_Sender.getAckedLock().lock();
+            Perfect_Sender.getAcked().add(m);
+            Perfect_Sender.getAckedLock().unlock();
         }
         else {
-            alreadyReceived = true;
-        }
+            if (!delivered.contains(m)) {
 
-        return packet;
+                // log output
+
+                OutputLogger.getLoggerLock().lock();
+                OutputLogger.writeLog("d " + senderID + " " + seqID);
+                OutputLogger.getLoggerLock().unlock();
+
+                delivered.add(m);
+
+                // sending ack
+                MessageData messageAck = new MessageData(m.getSenderID(), m.getMessageID(), true);
+                ProcessData p = Da_proc.processes.get(senderID);
+                try {
+                    UDP_Sender ackSender = new UDP_Sender(p,messageAck);
+                    ackSender.run();
+                    //new UDP_Sender(p, m);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
+    private List<MessageData> getAtomicDelivered() {
+        return Perfect_Sender.getMessageListAtomic(deliveredLock, delivered);
+    }
 }
