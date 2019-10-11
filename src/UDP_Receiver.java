@@ -21,7 +21,7 @@ public class UDP_Receiver extends Thread {
             while (listening) {
                 DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
                 socket.receive(receivePacket);
-                System.out.println("Packet received");
+                //System.out.println("Packet received");
                 String packet = new String(receivePacket.getData(), 0, receivePacket.getLength());
 
                 new Perfect_Receiver(packet);

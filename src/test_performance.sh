@@ -17,7 +17,7 @@ echo "5
 3 127.0.0.1 11003
 4 127.0.0.1 11004
 5 127.0.0.1 11005
-5" > membership
+100" > membership
 
 #start 5 processes
 for i in `seq 1 5`

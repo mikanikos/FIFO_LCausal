@@ -69,23 +69,14 @@ public class Da_proc {
         int seq_nr;
         for (seq_nr = 1; seq_nr <= main_instance.numMessages && running; seq_nr++) {
             for (ProcessData p : main_instance.processes.values()) {
-                MessageData m = new MessageData(main_instance.id, seq_nr, false);
+                MessageData m = new MessageData(main_instance.id, p.getId(), seq_nr, false);
                 new Perfect_Sender(p, m);
-
-                // Keep on sending the message until the acknowledgement is received
-//                try {
-//					while(!sender.acknowledgement()) {
-//						sender.send(main_instance.id + " " + seq_nr);
-//					}
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
             }
             // handle the output of processes
             OutputLogger.writeLog("b " + seq_nr);
         }
 
-        //System.out.println("Done");
+        System.out.println("Done");
 
         while(true) {
             Thread.sleep(1000);

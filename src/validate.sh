@@ -40,7 +40,8 @@ echo "5
 2 127.0.0.1 12002
 3 127.0.0.1 12003
 4 127.0.0.1 12004
-5 127.0.0.1 12005" > membership
+5 127.0.0.1 12005
+100" > membership
 
 else 
 echo "writing LCausal input..."
