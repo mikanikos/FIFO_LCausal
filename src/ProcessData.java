@@ -1,25 +1,25 @@
-public class ProcessData {
+class ProcessData {
 
     private int id;
 
-    public int getId() {
+    int getId() {
         return id;
     }
 
-    public String getIpAddress() {
+    String getIpAddress() {
         return ipAddress;
     }
 
     private String ipAddress;
     private int port;
 
-    public ProcessData(int id, String ipAddress, int port) {
+    ProcessData(int id, String ipAddress, int port) {
         this.id = id;
         this.ipAddress = ipAddress;
         this.port = port;
     }
 
-    public int getPort() {
+    int getPort() {
         return this.port;
     }
 }

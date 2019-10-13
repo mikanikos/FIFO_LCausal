@@ -2,40 +2,39 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class Da_proc {
 
-    public int getId() {
-        return id;
-    }
+    private static int id;
+    private static int numProcesses;
+    private static int numMessages;
+    private static ConcurrentMap<Integer, ProcessData> processes;
+    private static boolean running = true;
 
-    public static boolean isRunning() {
+    static boolean isRunning() {
         return running;
     }
-
-    public static void setRunning(boolean running) {
-        Da_proc.running = running;
+    static void stopRunning() {
+        running = false;
     }
-
-    public Map<Integer, ProcessData> getProcesses() {
+    static int getId() {
+        return id;
+    }
+    static int getNumMessages() {
+        return numMessages;
+    }
+    static ConcurrentMap<Integer, ProcessData> getProcesses() {
         return processes;
     }
 
-    private int id;
-    private int numProcesses;
-    private int numMessages;
-    public static Map<Integer, ProcessData> processes;
-
-    public static UDP_Receiver receiver;
-    private static boolean running = true;
-
     public Da_proc() {
-        this.processes = new HashMap<Integer, ProcessData>();
-        System.out.println(ManagementFactory.getRuntimeMXBean().getName());
+        processes = new ConcurrentHashMap<>();
         // set signal handlers
-        new ProcessModel();
+        new SignalHandlerUtility();
+
+        System.out.println(ManagementFactory.getRuntimeMXBean().getName());
     }
 
     @SuppressWarnings("static-access")
@@ -46,37 +45,31 @@ public class Da_proc {
         System.out.println("Initializing");
 
         // parse arguments, including membership
-        main_instance.id = Integer.parseInt(args[0]);
+        id = Integer.parseInt(args[0]);
         main_instance.parse_membership(args[1]);
-        
+        numMessages = Integer.parseInt(args[2]);
+
         // using java logging to output log file
-        new OutputLogger(main_instance.id);
+        new OutputLogger(id);
 
         // start listening for incoming UDP packets
-        int myPort = main_instance.getProcesses().get(main_instance.getId()).getPort();
-        receiver = new UDP_Receiver(myPort);
-        while(ProcessModel.wait_for_start) {
+        int myPort = processes.get(id).getPort();
+        new Thread(new Receiver(myPort)).start();
+
+        while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(1000);
         }
 
-        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
-
-        // not sending to myself
-        main_instance.processes.remove(main_instance.id);
-
         // start broadcast
-        UDP_Sender sender;
-        int seq_nr;
-        for (seq_nr = 1; seq_nr <= main_instance.numMessages && running; seq_nr++) {
-            for (ProcessData p : main_instance.processes.values()) {
-                MessageData m = new MessageData(main_instance.id, p.getId(), seq_nr, false);
-                new Perfect_Sender(p, m);
-            }
+        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
+            new URBroadcast().broadcast(Da_proc.getId(), seq_nr);
+
             // handle the output of processes
             OutputLogger.writeLog("b " + seq_nr);
         }
 
-        System.out.println("Done");
+        //System.out.println("Done");
 
         while(true) {
             Thread.sleep(1000);
@@ -97,12 +90,7 @@ public class Da_proc {
                 if (fields.length != 0) {
 
                     if (fields.length == 1) {
-                        if (numProcesses != 0) {
-                            numMessages = Integer.parseInt(fields[0]);
-                        }
-                        else {
                             numProcesses = Integer.parseInt(fields[0]);
-                        }
                     }
                     else {
                         processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
@@ -117,6 +105,7 @@ public class Da_proc {
         {
             try
             {
+                assert buffer != null;
                 buffer.close();
             }
             catch(IOException e)

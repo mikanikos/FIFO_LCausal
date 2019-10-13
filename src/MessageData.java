@@ -2,28 +2,27 @@ import java.util.Objects;
 
 public class MessageData {
 
+    private int sourceID;
     private int senderID;
     private int receiverID;
     private int messageID;
     private boolean isAck;
 
-    public int getSenderID() {
+
+    int getSourceID() { return sourceID; }
+    int getSenderID() {
         return senderID;
     }
-
-    public int getReceiverID() {
-        return receiverID;
-    }
-
-    public int getMessageID() {
+    int getReceiverID() { return receiverID; }
+    int getMessageID() {
         return messageID;
     }
-
-    public boolean isAck() {
+    boolean isAck() {
         return isAck;
     }
 
-    public MessageData(int senderID, int receiverID, int messageID, boolean isAck) {
+    MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck) {
+        this.sourceID = sourceID;
         this.senderID = senderID;
         this.receiverID = receiverID;
         this.messageID = messageID;
@@ -37,16 +36,27 @@ public class MessageData {
         MessageData that = (MessageData) o;
         return senderID == that.senderID &&
                 messageID == that.messageID &&
-                receiverID == that.receiverID;
+                sourceID == that.sourceID;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(senderID, messageID, receiverID);
+        return Objects.hash(senderID, messageID, sourceID);
     }
 
     @Override
     public String toString() {
-        return senderID + " " + receiverID + " " + messageID + " " + isAck;
+        return sourceID  + " " + senderID + " " + receiverID + " "  + messageID + " " + isAck;
+    }
+
+    static MessageData parseMessage(String stringMessage) {
+        String[] parsedMessage = stringMessage.split(" ");
+        int sourceID = Integer.parseInt(parsedMessage[0]);
+        int senderID = Integer.parseInt(parsedMessage[1]);
+        int receiverID = Integer.parseInt(parsedMessage[2]);
+        int seqID = Integer.parseInt(parsedMessage[3]);
+        boolean isAck = Boolean.parseBoolean(parsedMessage[4]);
+
+        return new MessageData(sourceID, senderID, receiverID, seqID, isAck);
     }
 }
