@@ -5,7 +5,7 @@ public class Sender {
 
     private DatagramSocket socket;
 
-    Sender() throws IOException {
+    Sender() throws SocketException {
         this.socket = new DatagramSocket();
     }
 

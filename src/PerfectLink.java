@@ -1,20 +1,30 @@
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class PerfectLink implements Runnable {
 
     private final Timer timer = new Timer(10000);
-    private Sender sender;
+    private static Sender sender;
+
+    static {
+        try {
+            sender = new Sender();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
+
     private MessageData message;
 
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
     private static ConcurrentMap<MessageData, Boolean> delivered = new ConcurrentHashMap<>();
+    private static URBroadcast urb = new URBroadcast();
 
 
-    public PerfectLink(MessageData message) throws IOException {
+    public PerfectLink(MessageData message) {
         this.message = message;
-        this.sender = new Sender();
     }
 
     // threaded send
@@ -36,19 +46,19 @@ public class PerfectLink implements Runnable {
         }
     }
 
-    public void receive() {
+    void receive() {
 
         if (message.isAck()) {
             ackMessages.putIfAbsent(message.toString(), false);
         } else {
             if (delivered.putIfAbsent(message, true) == null) {
                 //OutputLogger.writeLog("d " + message.getSourceID() + " " + message.getMessageID());
-                new URBroadcast().deliver(message);
+                urb.deliver(message);
             }
             MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
             try {
                 sender.send(ackMessage);
-                sender.close();
+                //sender.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

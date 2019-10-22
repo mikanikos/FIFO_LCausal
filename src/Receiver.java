@@ -3,6 +3,7 @@ import java.net.*;
 
 public class Receiver implements Runnable {
 
+    private static PerfectLink pl;
     private DatagramSocket socket;
     private byte[] buffer = new byte[16];
 
@@ -20,7 +21,8 @@ public class Receiver implements Runnable {
 
                 // parse message
                 MessageData message = MessageData.parseMessage(packet);
-                new PerfectLink(message).receive();
+                pl = new PerfectLink(message);
+                pl.receive();
             }
         } catch (IOException e) {
             e.printStackTrace();
