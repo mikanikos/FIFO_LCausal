@@ -3,9 +3,9 @@ import java.net.SocketException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class PerfectLink implements Runnable {
+public class PerfectLink {
 
-    private final Timer timer = new Timer(10000);
+    private final Timer timer = new Timer(100);
     private static Sender sender;
 
     static {
@@ -20,15 +20,15 @@ public class PerfectLink implements Runnable {
 
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
     private static ConcurrentMap<MessageData, Boolean> delivered = new ConcurrentHashMap<>();
-    private static URBroadcast urb = new URBroadcast();
+    //private static URBroadcast urb = new URBroadcast();
 
-
-    public PerfectLink(MessageData message) {
-        this.message = message;
-    }
+//
+//    public PerfectLink(MessageData message) {
+//        this.message = message;
+//    }
 
     // threaded send
-    public void run() {
+    public void send(MessageData message) {
         MessageData messageCopy = new MessageData(message.getSourceID(), message.getReceiverID(), message.getSenderID(), message.getMessageID(), true);
 
         timer.start();
@@ -42,18 +42,19 @@ public class PerfectLink implements Runnable {
         }
 
         if (timer.isExpired()) {
-            System.out.println("Timer expired " + message.toString());
+            //System.out.println("Timer expired " + message.toString());
+            Da_proc.getProcesses().get(message.getReceiverID()).getSenderInstance().getProcessQueue().add(message);
         }
     }
 
-    void receive() {
+    static void receive(MessageData message) {
 
         if (message.isAck()) {
             ackMessages.putIfAbsent(message.toString(), false);
         } else {
             if (delivered.putIfAbsent(message, true) == null) {
                 //OutputLogger.writeLog("d " + message.getSourceID() + " " + message.getMessageID());
-                urb.deliver(message);
+                URBroadcast.deliver(message);
             }
             MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
             try {

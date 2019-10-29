@@ -24,7 +24,7 @@ public class FIFOBroadcast {
             for (MessageSource m : messages.keySet()) {
                 int nextID = senderNextID.get(m.getSourceID());
                 if (m.getMessageID() == nextID && m.getSourceID() == m.getSourceID()) {
-                    System.out.println("Delivered");
+                    //System.out.println("Delivered");
                     delivered = true;
                     OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
                     senderNextID.put(m.getSourceID(), nextID + 1);

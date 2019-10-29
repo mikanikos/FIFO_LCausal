@@ -21,8 +21,8 @@ public class Receiver implements Runnable {
 
                 // parse message
                 MessageData message = MessageData.parseMessage(packet);
-                pl = new PerfectLink(message);
-                pl.receive();
+//                pl = new PerfectLink();
+                PerfectLink.receive(message);
             }
         } catch (IOException e) {
             e.printStackTrace();

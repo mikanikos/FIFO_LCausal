@@ -56,18 +56,38 @@ public class Da_proc {
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
 
-        while(SignalHandlerUtility.wait_for_start) {
+        for (ProcessData p : Da_proc.getProcesses().values()) {
+            if (p.getId() != Da_proc.getId()) {
+                URBroadcast urbInstance = new URBroadcast(p);
+                p.setSenderInstance(urbInstance);
+                new Thread(urbInstance).start();
+            }
+        }
+
+                while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(1000);
         }
 
         // start broadcast
-        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
-        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
-            new URBroadcast().broadcast(Da_proc.getId(), seq_nr);
+//        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+//        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
+//            new URBroadcast().broadcast(Da_proc.getId(), seq_nr);
+//
+//            // handle the output of processes
+//            OutputLogger.writeLog("b " + seq_nr);
+//        }
 
-            // handle the output of processes
+        for (ProcessData p : Da_proc.getProcesses().values()) {
+            if (p.getId() != Da_proc.getId()) {
+                p.getSenderInstance().broadcast();
+            }
+        }
+
+        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && Da_proc.isRunning(); seq_nr++) {
             OutputLogger.writeLog("b " + seq_nr);
         }
+
+
 
         //System.out.println("Done");
 
