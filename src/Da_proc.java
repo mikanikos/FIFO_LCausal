@@ -64,7 +64,7 @@ public class Da_proc {
             }
         }
 
-                while(SignalHandlerUtility.wait_for_start) {
+        while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(1000);
         }
 
