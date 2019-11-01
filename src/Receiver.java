@@ -16,12 +16,10 @@ public class Receiver implements Runnable {
             while (Da_proc.isRunning()) {
                 DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
                 socket.receive(receivePacket);
-                //System.out.println("Packet received");
                 String packet = new String(receivePacket.getData(), 0, receivePacket.getLength());
 
                 // parse message
                 MessageData message = MessageData.parseMessage(packet);
-//                pl = new PerfectLink();
                 PerfectLink.receive(message);
             }
         } catch (IOException e) {

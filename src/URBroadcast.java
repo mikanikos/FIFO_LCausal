@@ -44,20 +44,6 @@ public class URBroadcast implements Runnable {
         }
     }
 
-//    public void broadcast(int sourceID, int messageID) {
-//
-//        forwarded.put(new MessageSource(Da_proc.getId(), messageID), true);
-//
-//        for (ProcessData p : Da_proc.getProcesses().values()) {
-//            if (p.getId() != Da_proc.getId()) {
-//
-//                MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false);
-//
-//                new Thread(new PerfectLink(message)).start();
-//            }
-//        }
-//    }
-
     public static void sendToAll(int sourceID, int messageID) {
         for (ProcessData p : Da_proc.getProcesses().values()) {
             if (p.getId() != Da_proc.getId()) {

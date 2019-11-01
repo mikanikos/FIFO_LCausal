@@ -20,13 +20,7 @@ public class PerfectLink {
 
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
     private static ConcurrentMap<MessageData, Boolean> delivered = new ConcurrentHashMap<>();
-    //private static URBroadcast urb = new URBroadcast();
-
-//
-//    public PerfectLink(MessageData message) {
-//        this.message = message;
-//    }
-
+    
     // threaded send
     public void send(MessageData message) {
         MessageData messageCopy = new MessageData(message.getSourceID(), message.getReceiverID(), message.getSenderID(), message.getMessageID(), true);

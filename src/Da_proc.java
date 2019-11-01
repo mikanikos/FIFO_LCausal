@@ -37,8 +37,7 @@ public class Da_proc {
         System.out.println(ManagementFactory.getRuntimeMXBean().getName());
     }
 
-    @SuppressWarnings("static-access")
-	public static void main(String[] args) throws InterruptedException, IOException {
+    public static void main(String[] args) throws InterruptedException, IOException {
 
         Da_proc main_instance = new Da_proc();
 
@@ -65,17 +64,8 @@ public class Da_proc {
         }
 
                 while(SignalHandlerUtility.wait_for_start) {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }
-
-        // start broadcast
-//        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
-//        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
-//            new URBroadcast().broadcast(Da_proc.getId(), seq_nr);
-//
-//            // handle the output of processes
-//            OutputLogger.writeLog("b " + seq_nr);
-//        }
 
         for (ProcessData p : Da_proc.getProcesses().values()) {
             if (p.getId() != Da_proc.getId()) {
@@ -86,10 +76,6 @@ public class Da_proc {
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && Da_proc.isRunning(); seq_nr++) {
             OutputLogger.writeLog("b " + seq_nr);
         }
-
-
-
-        //System.out.println("Done");
 
         while(true) {
             Thread.sleep(1000);

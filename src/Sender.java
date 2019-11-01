@@ -15,7 +15,6 @@ public class Sender {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(process.getIpAddress()), process.getPort());
     	try {
             socket.send(packet);
-            //System.out.println("Packet sent");
         } catch (IOException e) {
             e.printStackTrace();
         }
