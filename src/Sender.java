@@ -4,7 +4,6 @@ import java.net.*;
 public class Sender {
 
     private DatagramSocket socket;
-    //private DatagramPacket packet;
 
     Sender() throws SocketException {
         this.socket = new DatagramSocket();
@@ -18,13 +17,12 @@ public class Sender {
 
     	try {
             socket.send(packet);
-            //System.out.println("Packet sent");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void close() {
-        socket.close();
-    }
+//    public void close() {
+//        socket.close();
+//    }
 }

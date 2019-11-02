@@ -1,9 +1,7 @@
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -15,6 +13,7 @@ public class Da_proc {
     private static ConcurrentMap<Integer, ProcessData> processes;
     private static boolean running = true;
 
+    static int getNumProcesses() { return numProcesses; }
     static boolean isRunning() {
         return running;
     }
@@ -50,6 +49,7 @@ public class Da_proc {
         id = Integer.parseInt(args[0]);
         main_instance.parse_membership(args[1]);
         numMessages = Integer.parseInt(args[2]);
+
 
         // start listening for incoming UDP packets
         int myPort = processes.get(id).getPort();

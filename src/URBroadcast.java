@@ -13,9 +13,7 @@ public class URBroadcast implements Runnable {
 
         for (ProcessData p : Da_proc.getProcesses().values()) {
             if (p.getId() != Da_proc.getId()) {
-
                 MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false);
-
                 processQueue.add(message);
             }
         }
@@ -30,7 +28,7 @@ public class URBroadcast implements Runnable {
             broadcast(message.getSourceID(), message.getMessageID());
         }
 
-        if (ackMessages.get(ms).get() > (Da_proc.getProcesses().keySet().size() / 2)) {
+        if (ackMessages.get(ms).get() > (Da_proc.getNumProcesses() / 2)) {
             if (delivered.putIfAbsent(ms, true) == null)
                 //OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
                 FIFOBroadcast.deliver(ms);

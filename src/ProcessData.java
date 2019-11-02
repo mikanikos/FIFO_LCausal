@@ -10,16 +10,6 @@ class ProcessData {
         return ipAddress;
     }
 
-    private URBroadcast senderInstance;
-
-    public URBroadcast getSenderInstance() {
-        return senderInstance;
-    }
-
-    public void setSenderInstance(URBroadcast senderInstance) {
-        this.senderInstance = senderInstance;
-    }
-
     private String ipAddress;
     private int port;
 
