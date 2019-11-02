@@ -63,7 +63,8 @@ public class PerfectLink implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            URBroadcast.processQueue.add(message);
+            Da_proc.getProcesses().get(message.getReceiverID()).getSenderInstance().getProcessQueue().add(message);
+            //URBroadcast.processQueue.add(message);
         }
 
 //        while (!ackMessages.containsKey(messageCopy.toString()) && !timer.isExpired()) {
