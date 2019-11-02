@@ -4,16 +4,17 @@ import java.net.*;
 public class Sender {
 
     private DatagramSocket socket;
-    private DatagramPacket packet;
+    //private DatagramPacket packet;
 
-    Sender(MessageData message) throws SocketException, UnknownHostException {
+    Sender() throws SocketException {
         this.socket = new DatagramSocket();
-        byte[] buffer = message.toString().getBytes();
-        ProcessData process = Da_proc.getProcesses().get(message.getReceiverID());
-        this.packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(process.getIpAddress()), process.getPort());
     }
 
-    public void send() throws UnknownHostException {
+    public void send(MessageData message) throws UnknownHostException {
+
+        byte[] buffer = message.toString().getBytes();
+        ProcessData process = Da_proc.getProcesses().get(message.getReceiverID());
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(process.getIpAddress()), process.getPort());
 
     	try {
             socket.send(packet);

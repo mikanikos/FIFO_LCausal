@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -49,47 +51,23 @@ public class Da_proc {
         main_instance.parse_membership(args[1]);
         numMessages = Integer.parseInt(args[2]);
 
-        // using java logging to output log file
-        new OutputLogger(id);
-
         // start listening for incoming UDP packets
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
-
-        for (ProcessData p : Da_proc.getProcesses().values()) {
-            if (p.getId() != Da_proc.getId()) {
-                URBroadcast urbInstance = new URBroadcast(p);
-                p.setSenderInstance(urbInstance);
-                new Thread(urbInstance).start();
-            }
-        }
+        new Thread(new URBroadcast()).start();
 
         while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(1000);
         }
 
         // start broadcast
-//        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
-//        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
-//            new URBroadcast().broadcast(Da_proc.getId(), seq_nr);
-//
-//            // handle the output of processes
-//            OutputLogger.writeLog("b " + seq_nr);
-//        }
+        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
+            URBroadcast.broadcast(Da_proc.getId(), seq_nr);
 
-        for (ProcessData p : Da_proc.getProcesses().values()) {
-            if (p.getId() != Da_proc.getId()) {
-                p.getSenderInstance().broadcast();
-            }
-        }
-
-        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && Da_proc.isRunning(); seq_nr++) {
+            // handle the output of processes
             OutputLogger.writeLog("b " + seq_nr);
         }
-
-
-
-        //System.out.println("Done");
 
         while(true) {
             Thread.sleep(1000);

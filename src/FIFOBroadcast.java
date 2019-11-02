@@ -1,36 +1,45 @@
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FIFOBroadcast {
 
-    ConcurrentMap<MessageSource, Boolean> messages;
-    ConcurrentMap<Integer,Integer> senderNextID;
+    private static ConcurrentMap<MessageSource, Boolean> messages = new ConcurrentHashMap<>();;
+    private static ConcurrentMap<Integer, AtomicInteger> senderNextID = new ConcurrentHashMap<>();
 
-    public FIFOBroadcast() {
-        messages = new ConcurrentHashMap<>();
-        senderNextID = new ConcurrentHashMap<>();
-    }
+//    public FIFOBroadcast() {
+//        messages =
+//        senderNextID = new ConcurrentHashMap<>();
+//    }
 
-    public void deliver(MessageSource ms) {
+    static void deliver(MessageSource ms) {
 
         messages.put(ms, true);
+        senderNextID.putIfAbsent(ms.getSourceID(), new AtomicInteger(1));
 
-        if (!senderNextID.containsKey(ms.getSourceID()))
-            senderNextID.put(ms.getSourceID(), 1);
+//        boolean delivered;
+//        do {
+//            delivered = false;
+//            for (MessageSource m : messages.keySet()) {
+//                AtomicInteger nextID = senderNextID.get(m.getSourceID());
+//                if (m.getMessageID() == nextID.get() && m.getSourceID() == m.getSourceID()) {
+//                    //System.out.println("Delivered");
+//                    delivered = true;
+//                    OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
+//                    senderNextID.computeIfPresent(m.getSourceID(), (key, value) -> new AtomicInteger(value.incrementAndGet()));
+//                    messages.remove(m);
+//                }
+//            }
+//        } while (delivered);
 
-        boolean delivered;
-        do {
-            delivered = false;
-            for (MessageSource m : messages.keySet()) {
-                int nextID = senderNextID.get(m.getSourceID());
-                if (m.getMessageID() == nextID && m.getSourceID() == m.getSourceID()) {
-                    //System.out.println("Delivered");
-                    delivered = true;
-                    OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
-                    senderNextID.put(m.getSourceID(), nextID + 1);
-                    messages.remove(m);
-                }
+        while(true) {
+            ms = new MessageSource(ms.getSourceID(), senderNextID.get(ms.getSourceID()).get());
+            if (messages.remove(ms) != null) {
+                OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
+                senderNextID.computeIfPresent(ms.getSourceID(), (key, value) -> new AtomicInteger(value.incrementAndGet()));
+            } else {
+                break;
             }
-        } while (delivered);
+        }
     }
 }
