@@ -1,7 +1,8 @@
+
 import sun.misc.Signal;
 
 public class SignalHandlerUtility extends Thread {
-
+	
 	static boolean wait_for_start = true;
 
 	SignalHandlerUtility() {
@@ -23,7 +24,7 @@ public class SignalHandlerUtility extends Thread {
 	public void run() {
 		while (!Thread.currentThread().isInterrupted()) {
 			try {
-				Thread.sleep(100);
+				Thread.sleep(1000);
 			} catch (Exception e){
 				// exception
 			}

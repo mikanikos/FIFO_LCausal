@@ -22,7 +22,4 @@ public class Sender {
         }
     }
 
-//    public void close() {
-//        socket.close();
-//    }
 }

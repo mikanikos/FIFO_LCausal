@@ -98,16 +98,12 @@ public class Da_proc {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
+        } finally {
+            try {
                 assert buffer != null;
                 buffer.close();
             }
-            catch(IOException e)
-            {
+            catch(IOException e) {
                 System.out.println("Error in closing the buffer");
             }
         }

@@ -9,14 +9,22 @@ public class MessageData {
     private boolean isAck;
 
 
-    int getSourceID() { return sourceID; }
+    int getSourceID() { 
+    	return sourceID; 
+	}
+    
     int getSenderID() {
         return senderID;
     }
-    int getReceiverID() { return receiverID; }
+    
+    int getReceiverID() { 
+    	return receiverID; 
+	}
+    
     int getMessageID() {
         return messageID;
     }
+    
     boolean isAck() {
         return isAck;
     }

@@ -30,7 +30,6 @@ public class URBroadcast implements Runnable {
 
         if (ackMessages.get(ms).get() > (Da_proc.getNumProcesses() / 2)) {
             if (delivered.putIfAbsent(ms, true) == null)
-                //OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
                 FIFOBroadcast.deliver(ms);
         }
     }
@@ -41,7 +40,7 @@ public class URBroadcast implements Runnable {
             MessageData m;
             while ((m = processQueue.poll()) != null)
                 PerfectLink.send(m);
-                //new Thread(new PerfectLink(m)).start();
         }
     }
+    
 }
