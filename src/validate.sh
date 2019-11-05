@@ -9,7 +9,7 @@ fi
 
 # time to wait for correct processes to broadcast all messages (in seconds)
 # (should be adapted to the number of messages to send)
-time_to_finish=3
+time_to_finish=10
 
 init_time=2
 
@@ -64,7 +64,7 @@ do
     if [ "$2" = "C" ]; then
       ./da_proc $i membership 100 &
     else
-      java Da_proc $i membership 100 &
+      java Da_proc $i membership 1000 &
     fi
     da_proc_id[$i]=$!
 done
