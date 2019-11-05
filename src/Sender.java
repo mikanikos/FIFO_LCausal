@@ -5,6 +5,10 @@ public class Sender {
 
     private DatagramSocket socket;
 
+    public DatagramSocket getSocket() {
+        return socket;
+    }
+
     Sender() throws SocketException {
         this.socket = new DatagramSocket();
     }
@@ -16,7 +20,9 @@ public class Sender {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(process.getIpAddress()), process.getPort());
 
     	try {
-            socket.send(packet);
+    	    if (!socket.isClosed()) {
+                socket.send(packet);
+    	    }
         } catch (IOException e) {
             e.printStackTrace();
         }

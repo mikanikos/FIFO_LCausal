@@ -36,7 +36,7 @@ public class SignalHandlerUtility extends Thread {
 
 		OutputLogger.writeLogToFile();
 
-		Thread.sleep(500);
+		//Thread.sleep(500);
 
 		System.exit(0);
 	}

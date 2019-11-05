@@ -32,6 +32,8 @@ public class Receiver implements Runnable {
 
             System.out.println("Killing all threads");
             executor.shutdown();
+
+            PerfectLink.closeSendingSocket();
         }
     }
 }

@@ -12,6 +12,10 @@ public class PerfectLink implements Runnable {
     private static ConcurrentMap<MessageData, Boolean> delivered = new ConcurrentHashMap<>();
     private static Sender sender;
 
+    public static void closeSendingSocket() {
+        sender.getSocket().close();
+    }
+
     static {
         try {
             sender = new Sender();
@@ -37,7 +41,7 @@ public class PerfectLink implements Runnable {
                 e.printStackTrace();
             }
 
-            if (delivered.putIfAbsent(message, true) == null && message.getSourceID() != Da_proc.getId()) {
+            if (delivered.putIfAbsent(message, true) == null) {
                 URBroadcast.deliver(message);
             }
         }

@@ -11,6 +11,7 @@ public class URBroadcast implements Runnable {
 
     public static void broadcast(int sourceID, int messageID) {
 
+        ackMessages.putIfAbsent(new MessageSource(sourceID, messageID), new AtomicInteger(1));
         for (ProcessData p : Da_proc.getProcesses().values()) {
             if (p.getId() != Da_proc.getId()) {
                 MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false);
