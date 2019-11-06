@@ -64,7 +64,7 @@ do
     if [ "$2" = "C" ]; then
       ./da_proc $i membership 100 &
     else
-      java Da_proc $i membership 1000 &
+      java Da_proc $i membership 100 &
     fi
     da_proc_id[$i]=$!
 done
