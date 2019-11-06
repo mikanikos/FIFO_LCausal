@@ -28,7 +28,12 @@ public class PerfectLink implements Runnable {
         this.message = message;
     }
 
+    public static long count = 0;
+    public static long time = 0;
+
     public void run() {
+
+        long start = System.nanoTime();
 
         if (message.isAck()) {
             ackMessages.putIfAbsent(message.toString(), false);
@@ -46,6 +51,9 @@ public class PerfectLink implements Runnable {
             }
         }
 
+        long end = System.nanoTime();
+        time += (end - start);
+        count++;
     }
 
     static void send(MessageData message) {

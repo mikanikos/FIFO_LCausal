@@ -1,4 +1,6 @@
+import sun.misc.Perf;
 import sun.misc.Signal;
+import sun.security.provider.PolicyParser;
 
 public class SignalHandlerUtility extends Thread {
 
@@ -33,8 +35,13 @@ public class SignalHandlerUtility extends Thread {
 	private void stopApp() throws InterruptedException {
 		System.out.println("Immediately stopping network packet processing");
 		Da_proc.stopRunning();
+		PerfectLink.closeSendingSocket();
 
 		OutputLogger.writeLogToFile();
+
+		Thread.sleep(500);
+		System.out.println("Average time to process a message in all the abstractions: " + (PerfectLink.time/PerfectLink.count));
+		System.out.println("Average time to process two consecutive receiving packets: " + (Receiver.time/Receiver.count));
 
 		//Thread.sleep(500);
 

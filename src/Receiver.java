@@ -12,12 +12,25 @@ public class Receiver implements Runnable {
         this.socket = new DatagramSocket(port);
     }
 
+    public static long count = 0;
+    public static long time = 0;
+    static long end = 0;
+    static long start = 0;
+
     public void run() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             while (Da_proc.isRunning()) {
                 DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
                 socket.receive(receivePacket);
+
+                end = System.nanoTime();
+                if (start != 0) {
+                    time += (end - start);
+                    count++;
+                }
+                start = System.nanoTime();
+
                 String packet = new String(receivePacket.getData(), 0, receivePacket.getLength());
 
                 // parse message
@@ -32,8 +45,6 @@ public class Receiver implements Runnable {
 
             System.out.println("Killing all threads");
             executor.shutdown();
-
-            PerfectLink.closeSendingSocket();
         }
     }
 }
