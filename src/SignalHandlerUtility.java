@@ -1,6 +1,4 @@
-import sun.misc.Perf;
 import sun.misc.Signal;
-import sun.security.provider.PolicyParser;
 
 public class SignalHandlerUtility extends Thread {
 
