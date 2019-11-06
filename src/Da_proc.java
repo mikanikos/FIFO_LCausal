@@ -61,6 +61,7 @@ public class Da_proc {
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
         new Thread(new URBroadcast()).start();
+        new Thread(new PerfectLink()).start();
 
         while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(1000);
