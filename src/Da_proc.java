@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 public class Da_proc {
 
@@ -12,6 +13,11 @@ public class Da_proc {
     private static int numMessages;
     private static ConcurrentMap<Integer, ProcessData> processes;
     private static boolean running = true;
+    private static ExecutorService threadedBroadcast;
+    
+    public static ExecutorService getThreadedBroadcast() {
+        return threadedBroadcast;
+    }
 
     static int getNumProcesses() { return numProcesses; }
     static boolean isRunning() {

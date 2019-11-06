@@ -42,7 +42,6 @@ public class URBroadcast implements Runnable {
             MessageData m;
             while ((m = processQueue.poll()) != null)
                 PerfectLink.send(m);
-                //new Thread(new PerfectLink(m)).start();
         }
     }
 }
