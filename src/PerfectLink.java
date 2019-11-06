@@ -26,33 +26,29 @@ public class PerfectLink implements Runnable {
         }
     }
 
-//    public PerfectLink(MessageData message) {
-//        this.message = message;
-//    }
+    public PerfectLink(MessageData message) {
+        this.message = message;
+    }
 
     public void run() {
 
-        while(Da_proc.isRunning()) {
-            MessageData message;
-            while ((message = messages.poll()) != null) {
-                if (message.isAck()) {
-                    ackMessages.putIfAbsent(message.toString(), false);
-                } else {
+        if (message.isAck()) {
+            ackMessages.putIfAbsent(message.toString(), false);
+        } else {
 
-                    MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
-                    try {
-                        sender.send(ackMessage);
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (delivered.putIfAbsent(message, true) == null) {
-                        URBroadcast.deliver(message);
-                    }
-                }
+            MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
+            try {
+                sender.send(ackMessage);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
             }
-            //new Thread(new PerfectLink(m)).start();
+
+            if (delivered.putIfAbsent(message, true) == null) {
+                URBroadcast.deliver(message);
+            }
         }
+        //new Thread(new PerfectLink(m)).start();
+    }
 
 //        if (message.isAck()) {
 //            ackMessages.putIfAbsent(message.toString(), false);
@@ -69,8 +65,6 @@ public class PerfectLink implements Runnable {
 //                URBroadcast.deliver(message);
 //            }
 //        }
-
-    }
 
     static void send(MessageData message) {
         MessageData messageCopy = new MessageData(message.getSourceID(), message.getReceiverID(), message.getSenderID(), message.getMessageID(), true);

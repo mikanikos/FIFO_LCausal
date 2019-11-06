@@ -13,7 +13,7 @@ public class Receiver implements Runnable {
     }
 
     public void run() {
-        //ExecutorService executor = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             while (Da_proc.isRunning()) {
                 DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
@@ -22,9 +22,8 @@ public class Receiver implements Runnable {
 
                 // parse message
                 MessageData message = MessageData.parseMessage(packet);
-                //Runnable worker = new PerfectLink(message);
-                //executor.execute(worker);
-                PerfectLink.messages.add(message);
+                Runnable worker = new PerfectLink(message);
+                executor.execute(worker);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -32,7 +31,7 @@ public class Receiver implements Runnable {
             socket.close();
 
             System.out.println("Killing all threads");
-            //executor.shutdown();
+            executor.shutdown();
 
             PerfectLink.closeSendingSocket();
         }
