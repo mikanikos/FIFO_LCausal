@@ -2,8 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 
 public class Da_proc {
 
@@ -12,6 +11,11 @@ public class Da_proc {
     private static int numMessages;
     private static ConcurrentMap<Integer, ProcessData> processes;
     private static boolean running = true;
+    private static ExecutorService threadedBroadcast;
+
+    public static ExecutorService getThreadedBroadcast() {
+        return threadedBroadcast;
+    }
 
     static int getNumProcesses() { return numProcesses; }
     static boolean isRunning() {
@@ -54,13 +58,22 @@ public class Da_proc {
         // start listening for incoming UDP packets
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
-        new Thread(new URBroadcast()).start();
+        //new Thread(new URBroadcast()).start();
+        new Thread(new PerfectLink()).start();
+
+        threadedBroadcast = Executors.newFixedThreadPool(numProcesses-1);
+
+        for (ProcessData p : Da_proc.getProcesses().values()) {
+            if (p.getId() != Da_proc.getId()) {
+                Runnable worker = new URBroadcast(p);
+                threadedBroadcast.execute(worker);
+            }
+        }
 
         while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(1000);
         }
 
-        // start broadcast
         System.out.println("Broadcasting " + main_instance.numMessages + " messages");
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
             URBroadcast.broadcast(Da_proc.getId(), seq_nr);
@@ -68,6 +81,15 @@ public class Da_proc {
             // handle the output of processes
             OutputLogger.writeLog("b " + seq_nr);
         }
+
+        // start broadcast
+//        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+//        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
+//            URBroadcast.broadcast(Da_proc.getId(), seq_nr);
+//
+//            // handle the output of processes
+//            OutputLogger.writeLog("b " + seq_nr);
+//        }
 
         while(true) {
             Thread.sleep(1000);

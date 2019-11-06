@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
 public class PerfectLink implements Runnable {
@@ -10,6 +11,7 @@ public class PerfectLink implements Runnable {
 
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
     private static ConcurrentMap<MessageData, Boolean> delivered = new ConcurrentHashMap<>();
+    public static ConcurrentLinkedQueue<MessageData> messages = new ConcurrentLinkedQueue<>();
     private static Sender sender;
 
     public static void closeSendingSocket() {
@@ -24,28 +26,49 @@ public class PerfectLink implements Runnable {
         }
     }
 
-    public PerfectLink(MessageData message) {
-        this.message = message;
-    }
+//    public PerfectLink(MessageData message) {
+//        this.message = message;
+//    }
 
     public void run() {
 
-        if (message.isAck()) {
-            ackMessages.putIfAbsent(message.toString(), false);
-        } else {
+        while(Da_proc.isRunning()) {
+            MessageData message;
+            while ((message = messages.poll()) != null) {
+                if (message.isAck()) {
+                    ackMessages.putIfAbsent(message.toString(), false);
+                } else {
 
-            MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
-            try {
-                sender.send(ackMessage);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
+                    MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
+                    try {
+                        sender.send(ackMessage);
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
 
-            if (delivered.putIfAbsent(message, true) == null) {
-                URBroadcast.deliver(message);
+                    if (delivered.putIfAbsent(message, true) == null) {
+                        URBroadcast.deliver(message);
+                    }
+                }
             }
+            //new Thread(new PerfectLink(m)).start();
         }
 
+//        if (message.isAck()) {
+//            ackMessages.putIfAbsent(message.toString(), false);
+//        } else {
+//
+//            MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
+//            try {
+//                sender.send(ackMessage);
+//            } catch (UnknownHostException e) {
+//                e.printStackTrace();
+//            }
+//
+//            if (delivered.putIfAbsent(message, true) == null) {
+//                URBroadcast.deliver(message);
+//            }
+//        }
     }
 
     static void send(MessageData message) {
@@ -53,11 +76,13 @@ public class PerfectLink implements Runnable {
 
         if (!ackMessages.containsKey(messageCopy.toString())) {
             try {
-                sender.send(message);
+                Da_proc.getProcesses().get(message.getReceiverID()).getSenderInstance().send(message);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            URBroadcast.processQueue.add(message);
+
+            Da_proc.getProcesses().get(message.getReceiverID()).getProcessQueue().add(message);
+            //URBroadcast.processQueue.add(message);
         }
     }
 }
