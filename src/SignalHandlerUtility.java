@@ -34,7 +34,7 @@ public class SignalHandlerUtility extends Thread {
 		System.out.println("Immediately stopping network packet processing");
 		Da_proc.stopRunning();
 
-		Thread.sleep(500);
+		//Thread.sleep(500);
 
 		OutputLogger.writeLogToFile();
 

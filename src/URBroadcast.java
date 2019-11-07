@@ -1,15 +1,14 @@
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.*;
 
 public class URBroadcast implements Runnable {
 
     private static Map<MessageSource, Integer> ackMessages = new HashMap<>();
     private static Set<MessageSource> delivered = new HashSet<>();
-    public static ConcurrentLinkedQueue<MessageData> processQueue = new ConcurrentLinkedQueue<>();
+    //public static DelayQueue<MessageData> processQueue = new DelayQueue<>();
+    //public static ConcurrentLinkedQueue<MessageData> processQueue = new ConcurrentLinkedQueue<>();
+    public static PriorityBlockingQueue<MessageData> processQueue = new PriorityBlockingQueue<>(Da_proc.getNumMessages() * Da_proc.getNumProcesses(), Comparator.comparingInt(MessageData::getMessageID));
+
 
     public static void broadcast(int sourceID, int messageID) {
 
@@ -17,7 +16,7 @@ public class URBroadcast implements Runnable {
         for (ProcessData p : Da_proc.getProcesses().values()) {
             if (p.getId() != Da_proc.getId()) {
                 MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false);
-                processQueue.add(message);
+                processQueue.offer(message);
             }
         }
     }
@@ -31,9 +30,9 @@ public class URBroadcast implements Runnable {
             broadcast(message.getSourceID(), message.getMessageID());
         }
 
-        if (ackMessages.get(ms) > (Da_proc.getNumProcesses() / 2)) {
+        //// CHECK THE ERROR !!!!!!!!!!!!!!!!
+        if (ackMessages.getOrDefault(ms, 0) > (Da_proc.getNumProcesses() / 2)) {
             if (!delivered.contains(ms)) {
-                //OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
                 delivered.add(ms);
                 FIFOBroadcast.deliver(ms);
             }
@@ -43,9 +42,13 @@ public class URBroadcast implements Runnable {
     @Override
     public void run() {
         while(Da_proc.isRunning()) {
-            MessageData m;
-            while ((m = processQueue.poll()) != null)
-                PerfectLink.send(m);
+
+            // WHICH METHOD TO USE?????????
+            //MessageData m;
+            Iterator<MessageData> it = processQueue.iterator();
+            while(it.hasNext())
+            //while ((m = processQueue.poll()) != null)
+                PerfectLink.send(it.next());
                 //new Thread(new PerfectLink(m)).start();
         }
     }

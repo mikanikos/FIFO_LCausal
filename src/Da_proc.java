@@ -53,28 +53,31 @@ public class Da_proc {
         // start listening for incoming UDP packets
         int myPort = processes.get(id).getPort();
 
-        ExecutorService executor = Executors.newFixedThreadPool(3);
-        Runnable listener = new Receiver(myPort);
-        Runnable sendingQueue = new URBroadcast();
-        Runnable receivingQueue = new PerfectLink();
+        new Thread(new Receiver(myPort)).start();
+        new Thread(new PerfectLink()).start();
+        Thread sendingQueue = new Thread(new URBroadcast());
 
-        // start broadcast
-        //System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+//        ExecutorService executor = Executors.newFixedThreadPool(3);
+//        Runnable listener = new Receiver(myPort);
+//        Runnable sendingQueue = new URBroadcast();
+//        Runnable receivingQueue = new PerfectLink();
+//
+//        executor.execute(listener);
+//        executor.execute(receivingQueue);
+
+        // Preprocess messages before starting and putting them in the queue
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
             URBroadcast.broadcast(Da_proc.getId(), seq_nr);
-
-            // handle the output of processes
-            //OutputLogger.writeLog("b " + seq_nr);
         }
-
-        executor.execute(listener);
-        executor.execute(receivingQueue);
 
         while(SignalHandlerUtility.wait_for_start) {
             Thread.sleep(0, 1);
         }
 
-        executor.execute(sendingQueue);
+        //executor.execute(sendingQueue);
+        sendingQueue.start();
+
+        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
             //URBroadcast.broadcast(Da_proc.getId(), seq_nr);
 

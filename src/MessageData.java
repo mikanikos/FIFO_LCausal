@@ -1,13 +1,23 @@
 import java.util.Objects;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
 
-public class MessageData {
+public class MessageData implements Delayed {
 
     private int sourceID;
     private int senderID;
     private int receiverID;
     private int messageID;
     private boolean isAck;
+    private long time;
 
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = System.currentTimeMillis() + time;
+    }
 
     int getSourceID() { return sourceID; }
     int getSenderID() {
@@ -58,5 +68,22 @@ public class MessageData {
         boolean isAck = Boolean.parseBoolean(parsedMessage[4]);
 
         return new MessageData(sourceID, senderID, receiverID, seqID, isAck);
+    }
+
+    @Override
+    public long getDelay(TimeUnit timeUnit) {
+        long diff = time - System.currentTimeMillis();
+        return timeUnit.convert(diff, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed obj) {
+        if (this.time < ((MessageData)obj).time) {
+            return -1;
+        }
+        if (this.time > ((MessageData)obj).time) {
+            return 1;
+        }
+        return 0;
     }
 }

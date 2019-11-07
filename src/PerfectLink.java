@@ -5,18 +5,16 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.PriorityBlockingQueue;
 
 public class PerfectLink implements Runnable {
 
-    //private MessageData message;
-
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
     private static Set<MessageData> delivered = new HashSet<>();
-    //public static Queue<MessageData> messages = new ConcurrentLinkedQueue<>();
-    public static PriorityBlockingQueue<MessageData> messages = new PriorityBlockingQueue<>(Da_proc.getNumMessages(), Comparator.comparingInt(MessageData::getMessageID));
+    public static Queue<MessageData> messages = new ConcurrentLinkedQueue<>();
+    //public static PriorityBlockingQueue<MessageData> messages = new PriorityBlockingQueue<>(Da_proc.getNumMessages(), Comparator.comparingInt(MessageData::getMessageID));
     private static Sender sender;
 
+    // USING IT DESPITE POSSIBLE EXCEPTION?????????
     public static void closeSendingSocket() {
         sender.getSocket().close();
     }
@@ -31,41 +29,42 @@ public class PerfectLink implements Runnable {
 
     public void run() {
 
-        while(Da_proc.isRunning()) {
+        while (Da_proc.isRunning()) {
             MessageData message;
             while ((message = messages.poll()) != null) {
                 if (message.isAck()) {
-                    ackMessages.putIfAbsent(message.toString(), false);
+                    MessageData finalMessage = message;
+                    PerfectLink.messages.removeIf(messageData -> {
+                        if (finalMessage.getSourceID() == messageData.getSourceID() && finalMessage.getSenderID() == messageData.getReceiverID() && messageData.getSenderID() == Da_proc.getId() && finalMessage.getReceiverID() == Da_proc.getId() && messageData.getMessageID() == finalMessage.getMessageID())
+                            return true;
+                        return false;
+                    });
                 } else {
 
+
+                    MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true);
                     try {
-                        sender.send(new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true));
+                        sender.send(ackMessage);
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
 
+                    // AFTER OR BEFORE SENDING AN ACK??????
                     if (!delivered.contains(message)) {
                         delivered.add(message);
                         URBroadcast.deliver(message);
                     }
                 }
             }
-            //new Thread(new PerfectLink(m)).start();
         }
-
     }
 
     static void send(MessageData message) {
-        MessageData messageCopy = new MessageData(message.getSourceID(), message.getReceiverID(), message.getSenderID(), message.getMessageID(), true);
 
-        //System.out.println(message.toString());
-        if (!ackMessages.containsKey(messageCopy.toString())) {
-            try {
-                sender.send(message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            URBroadcast.processQueue.add(message);
+        try {
+            sender.send(message);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
