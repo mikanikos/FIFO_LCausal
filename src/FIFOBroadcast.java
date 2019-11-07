@@ -1,22 +1,22 @@
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FIFOBroadcast {
 
-    private static ConcurrentMap<MessageSource, Boolean> messages = new ConcurrentHashMap<>();;
-    private static ConcurrentMap<Integer, AtomicInteger> senderNextID = new ConcurrentHashMap<>();
+    public static Set<MessageSource> messages = new HashSet<>();;
+    private static Map<Integer, Integer> senderNextID = new ConcurrentHashMap<>();
 
     static void deliver(MessageSource ms) {
 
-        messages.put(ms, true);
-        senderNextID.putIfAbsent(ms.getSourceID(), new AtomicInteger(1));
+        messages.add(ms);
+        senderNextID.putIfAbsent(ms.getSourceID(), 1);
 
         while(true) {
-            ms = new MessageSource(ms.getSourceID(), senderNextID.get(ms.getSourceID()).get());
-            if (messages.remove(ms) != null) {
+            ms = new MessageSource(ms.getSourceID(), senderNextID.get(ms.getSourceID()));
+            if (messages.remove(ms)) {
                 OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
-                senderNextID.computeIfPresent(ms.getSourceID(), (key, value) -> new AtomicInteger(value.incrementAndGet()));
+                senderNextID.computeIfPresent(ms.getSourceID(), (key, value) -> value+1);
             } else {
                 break;
             }

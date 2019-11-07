@@ -1,6 +1,10 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class OutputLogger {
@@ -17,8 +21,8 @@ class OutputLogger {
     static void writeLogToFile() {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("da_proc_" + Da_proc.getId() + ".out"))) {
-            for (String message : Log) {
-                writer.write(message + "\n");
+            for (String messageOutput : Log) {
+                writer.write(messageOutput + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();

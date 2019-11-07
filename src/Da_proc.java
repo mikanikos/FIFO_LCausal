@@ -2,8 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 
 public class Da_proc {
 
@@ -53,18 +52,31 @@ public class Da_proc {
 
         // start listening for incoming UDP packets
         int myPort = processes.get(id).getPort();
-        new Thread(new Receiver(myPort)).start();
-        new Thread(new URBroadcast()).start();
-        new Thread(new PerfectLink()).start();
 
-        while(SignalHandlerUtility.wait_for_start) {
-            Thread.sleep(1000);
-        }
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        Runnable listener = new Receiver(myPort);
+        Runnable sendingQueue = new URBroadcast();
+        Runnable receivingQueue = new PerfectLink();
 
         // start broadcast
-        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+        //System.out.println("Broadcasting " + main_instance.numMessages + " messages");
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
             URBroadcast.broadcast(Da_proc.getId(), seq_nr);
+
+            // handle the output of processes
+            //OutputLogger.writeLog("b " + seq_nr);
+        }
+
+        executor.execute(listener);
+        executor.execute(receivingQueue);
+
+        while(SignalHandlerUtility.wait_for_start) {
+            Thread.sleep(0, 1);
+        }
+
+        executor.execute(sendingQueue);
+        for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
+            //URBroadcast.broadcast(Da_proc.getId(), seq_nr);
 
             // handle the output of processes
             OutputLogger.writeLog("b " + seq_nr);
