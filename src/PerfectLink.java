@@ -5,19 +5,16 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class PerfectLink implements Runnable {
 
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
     private static Set<MessageData> delivered = new HashSet<>();
-    public static Queue<MessageData> messages = new ConcurrentLinkedQueue<>();
-    //public static PriorityBlockingQueue<MessageData> messages = new PriorityBlockingQueue<>(Da_proc.getNumMessages(), Comparator.comparingInt(MessageData::getMessageID));
+    //public static Queue<MessageData> messages = new ConcurrentLinkedQueue<>();
+    public static PriorityBlockingQueue<MessageData> messages = new PriorityBlockingQueue<>(Da_proc.getNumMessages() * Da_proc.getNumProcesses(), Comparator.comparingInt(MessageData::getMessageID));
     private static Sender sender;
 
-    // USING IT DESPITE POSSIBLE EXCEPTION?????????
-    public static void closeSendingSocket() {
-        sender.getSocket().close();
-    }
 
     static {
         try {
@@ -49,7 +46,6 @@ public class PerfectLink implements Runnable {
                         e.printStackTrace();
                     }
 
-                    // AFTER OR BEFORE SENDING AN ACK??????
                     if (!delivered.contains(message)) {
                         delivered.add(message);
                         URBroadcast.deliver(message);
@@ -66,5 +62,6 @@ public class PerfectLink implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        PerfectLink.messages.add(message);
     }
 }

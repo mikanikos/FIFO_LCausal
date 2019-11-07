@@ -27,8 +27,6 @@ public class Receiver implements Runnable {
             e.printStackTrace();
         } finally {
             socket.close();
-
-            //PerfectLink.closeSendingSocket();
         }
     }
 }

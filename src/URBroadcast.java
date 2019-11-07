@@ -6,8 +6,8 @@ public class URBroadcast implements Runnable {
     private static Map<MessageSource, Integer> ackMessages = new HashMap<>();
     private static Set<MessageSource> delivered = new HashSet<>();
     //public static DelayQueue<MessageData> processQueue = new DelayQueue<>();
-    //public static ConcurrentLinkedQueue<MessageData> processQueue = new ConcurrentLinkedQueue<>();
-    public static PriorityBlockingQueue<MessageData> processQueue = new PriorityBlockingQueue<>(Da_proc.getNumMessages() * Da_proc.getNumProcesses(), Comparator.comparingInt(MessageData::getMessageID));
+    public static ConcurrentLinkedQueue<MessageData> processQueue = new ConcurrentLinkedQueue<>();
+    //public static PriorityBlockingQueue<MessageData> processQueue = new PriorityBlockingQueue<>(Da_proc.getNumMessages() * Da_proc.getNumProcesses(), Comparator.comparingInt(MessageData::getMessageID));
 
 
     public static void broadcast(int sourceID, int messageID) {
@@ -30,7 +30,6 @@ public class URBroadcast implements Runnable {
             broadcast(message.getSourceID(), message.getMessageID());
         }
 
-        //// CHECK THE ERROR !!!!!!!!!!!!!!!!
         if (ackMessages.getOrDefault(ms, 0) > (Da_proc.getNumProcesses() / 2)) {
             if (!delivered.contains(ms)) {
                 delivered.add(ms);
@@ -43,12 +42,9 @@ public class URBroadcast implements Runnable {
     public void run() {
         while(Da_proc.isRunning()) {
 
-            // WHICH METHOD TO USE?????????
-            //MessageData m;
-            Iterator<MessageData> it = processQueue.iterator();
-            while(it.hasNext())
-            //while ((m = processQueue.poll()) != null)
-                PerfectLink.send(it.next());
+            MessageData m;
+            while ((m = processQueue.poll()) != null)
+                PerfectLink.send(m);
                 //new Thread(new PerfectLink(m)).start();
         }
     }
