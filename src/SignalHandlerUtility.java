@@ -1,7 +1,9 @@
 import sun.misc.Signal;
 
+// Signal utility: modified version of the template file provided
 public class SignalHandlerUtility extends Thread {
 
+	// Wait to start sending packets
 	static boolean wait_for_start = true;
 
 	SignalHandlerUtility() {
@@ -30,10 +32,16 @@ public class SignalHandlerUtility extends Thread {
 		}
 	}
 
-	private void stopApp() throws InterruptedException {
+	// Stop application, stop packet processing by stopping sending and receiving queue
+	private void stopApp() {
 		System.out.println("Immediately stopping network packet processing");
+
+		// Stop listening and processing packets
 		Da_proc.stopRunning();
+
+		// Write to file the logs
 		OutputLogger.writeLogToFile();
+
 		System.exit(0);
 	}
 
@@ -64,11 +72,7 @@ public class SignalHandlerUtility extends Thread {
 		public void handle(Signal signal) {
 			System.out.format("Handling signal: %s\n", signal.toString());
 			p.interrupt();
-			try {
-				p.stopApp();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			p.stopApp();
 		}
 	}
 
@@ -84,11 +88,7 @@ public class SignalHandlerUtility extends Thread {
 		public void handle(Signal signal) {
 			System.out.format("Handling signal: %s\n", signal.toString());
 			p.interrupt();
-			try {
-				p.stopApp();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			p.stopApp();
 		}
 	}
 }

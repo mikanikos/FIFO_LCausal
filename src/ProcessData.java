@@ -1,24 +1,26 @@
-import java.net.SocketException;
+// Process data
+public class ProcessData {
 
-class ProcessData {
-
+    // process id
     private int id;
+    // ip address where it received
     private String ipAddress;
+    // port where it received
     private int port;
 
-    int getId() {
+    public int getId() {
         return id;
     }
 
-    String getIpAddress() {
+    public String getIpAddress() {
         return ipAddress;
     }
-    
-    int getPort() {
+
+    public int getPort() {
         return this.port;
     }
 
-    ProcessData(int id, String ipAddress, int port) throws SocketException {
+    public ProcessData(int id, String ipAddress, int port) {
         this.id = id;
         this.ipAddress = ipAddress;
         this.port = port;

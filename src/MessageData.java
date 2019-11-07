@@ -1,27 +1,37 @@
 import java.util.Objects;
 
+// Store all message data that are important for the protocols used
 public class MessageData {
 
+    // id of the source of the message (creator)
     private int sourceID;
+    // id of the sender of the message
     private int senderID;
+    // id of the supposed receiver of the message
     private int receiverID;
+    // message id
     private int messageID;
+    // identify if the message is an ack
     private boolean isAck;
 
 
-    int getSourceID() { return sourceID; }
-    int getSenderID() {
+    public int getSourceID() { return sourceID; }
+
+    public int getSenderID() {
         return senderID;
     }
-    int getReceiverID() { return receiverID; }
-    int getMessageID() {
+
+    public int getReceiverID() { return receiverID; }
+
+    public int getMessageID() {
         return messageID;
     }
-    boolean isAck() {
+
+    public boolean isAck() {
         return isAck;
     }
 
-    MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck) {
+    public MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck) {
         this.sourceID = sourceID;
         this.senderID = senderID;
         this.receiverID = receiverID;
@@ -49,7 +59,8 @@ public class MessageData {
         return sourceID  + " " + senderID + " " + receiverID + " "  + messageID + " " + isAck;
     }
 
-    static MessageData parseMessage(String stringMessage) {
+    // Parse message: convert from string to MessageData
+    public static MessageData parseMessage(String stringMessage) {
         String[] parsedMessage = stringMessage.split(" ");
         int sourceID = Integer.parseInt(parsedMessage[0]);
         int senderID = Integer.parseInt(parsedMessage[1]);

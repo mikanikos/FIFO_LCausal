@@ -5,14 +5,12 @@ public class Sender {
 
     private DatagramSocket socket;
 
-    public DatagramSocket getSocket() {
-        return socket;
-    }
-
-    Sender() throws SocketException {
+    // Initialize socket
+    public Sender() throws SocketException {
         this.socket = new DatagramSocket();
     }
 
+    // Send UDP packet
     public void send(MessageData message) throws UnknownHostException {
 
         byte[] buffer = message.toString().getBytes();
@@ -20,9 +18,7 @@ public class Sender {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(process.getIpAddress()), process.getPort());
 
     	try {
-    	    if (!socket.isClosed()) {
-                socket.send(packet);
-    	    }
+    	    socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }

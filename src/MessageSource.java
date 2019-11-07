@@ -1,8 +1,25 @@
 import java.util.Objects;
 
-class MessageSource {
+// Structure to represent information that uniquely identify a message
+public class MessageSource {
+
+    // source of the message
     private int sourceID;
+    // message id
     private int messageID;
+
+    public int getSourceID() {
+        return sourceID;
+    }
+
+    public int getMessageID() {
+        return messageID;
+    }
+
+    public MessageSource(int sourceID, int messageID) {
+        this.sourceID = sourceID;
+        this.messageID = messageID;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -16,18 +33,5 @@ class MessageSource {
     @Override
     public int hashCode() {
         return Objects.hash(sourceID, messageID);
-    }
-
-    public int getSourceID() {
-        return sourceID;
-    }
-
-    public int getMessageID() {
-        return messageID;
-    }
-
-    public MessageSource(int sourceID, int messageID) {
-        this.sourceID = sourceID;
-        this.messageID = messageID;
     }
 }

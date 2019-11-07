@@ -3,21 +3,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-class OutputLogger {
+// Log and create messages for output files
+public class OutputLogger {
 
-    private static ConcurrentLinkedQueue<String> Log  = new ConcurrentLinkedQueue<>();
+    // Store logs
+    private static ConcurrentLinkedQueue<String> logs  = new ConcurrentLinkedQueue<>();
 
-    static void writeLog(final String message) {
-
+    // Store log message
+    public static void writeLog(final String message) {
         if (message != null && !message.trim().isEmpty()) {
-            Log.add(message);
+            logs.add(message);
         }
     }
 
-    static void writeLogToFile() {
+    // Write all messages stored to the log file
+    public static void writeLogToFile() {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("da_proc_" + Da_proc.getId() + ".out"))) {
-            for (String message : Log) {
+            for (String message : logs) {
                 writer.write(message + "\n");
             }
         } catch (IOException e) {

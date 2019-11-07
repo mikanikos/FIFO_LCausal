@@ -1,51 +1,51 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 
 public class Da_proc {
 
+    // Id of the current process
     private static int id;
+    // Number of processes (from membership file)
     private static int numProcesses;
+    // Number of messages (from parameter)
     private static int numMessages;
+    // Map for storing all processes information
     private static ConcurrentMap<Integer, ProcessData> processes;
+    // Use boolean value to set packet processing status
     private static boolean running = true;
-    private static ExecutorService threadedBroadcast;
-    
-    public static ExecutorService getThreadedBroadcast() {
-        return threadedBroadcast;
-    }
 
-    static int getNumProcesses() { return numProcesses; }
-    static boolean isRunning() {
+    public static int getNumProcesses() { return numProcesses; }
+
+    public static boolean isRunning() {
         return running;
     }
-    static void stopRunning() {
+
+    public static void stopRunning() {
         running = false;
     }
-    static int getId() {
+
+    public static int getId() {
         return id;
     }
-    static int getNumMessages() {
+
+    public static int getNumMessages() {
         return numMessages;
     }
-    static ConcurrentMap<Integer, ProcessData> getProcesses() {
+
+    public static ConcurrentMap<Integer, ProcessData> getProcesses() {
         return processes;
     }
 
     public Da_proc() {
         processes = new ConcurrentHashMap<>();
-        // set signal handlers
+        // set up signal handlers
         new SignalHandlerUtility();
-
-        System.out.println(ManagementFactory.getRuntimeMXBean().getName());
     }
 
-    @SuppressWarnings("static-access")
-	public static void main(String[] args) throws InterruptedException, IOException {
+    public static void main(String[] args) throws InterruptedException, IOException {
 
         Da_proc main_instance = new Da_proc();
 
@@ -57,13 +57,18 @@ public class Da_proc {
         numMessages = Integer.parseInt(args[2]);
 
 
-        // start listening for incoming UDP packets
+        // start threads for incoming UDP packets
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
+
+        // start thread for receiving queue
         new Thread(new URBroadcast()).start();
+
+        // start thread for sending queue
         new Thread(new PerfectLink()).start();
 
-        while(SignalHandlerUtility.wait_for_start) {
+        // wait user signal to start broadcasting
+        while (SignalHandlerUtility.wait_for_start) {
             Thread.sleep(100);
         }
 
@@ -72,47 +77,43 @@ public class Da_proc {
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
             URBroadcast.broadcast(Da_proc.getId(), seq_nr);
 
-            // handle the output of processes
+            // write broadcast message to the output file
             OutputLogger.writeLog("b " + seq_nr);
         }
 
-        while(true) {
+        // Waiting to stop
+        while (true) {
             Thread.sleep(1000);
         }
     }
 
+    // parse input membership file
     private void parse_membership(String filename) {
         String line = "";
         BufferedReader buffer = null;
 
         try {
             buffer = new BufferedReader(new FileReader(filename));
-
             while ((line = buffer.readLine()) != null) {
 
                 String[] fields = line.split(" ");
-
                 if (fields.length != 0) {
 
-                    if (fields.length == 1) {
-                            numProcesses = Integer.parseInt(fields[0]);
-                    }
-                    else {
+                    if (fields.length == 1)
+                        numProcesses = Integer.parseInt(fields[0]);
+                    else
                         processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
-                    }
                 }
 
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
+            System.out.println("Error when parsing the membership file");
+        } finally {
             try {
                 assert buffer != null;
                 buffer.close();
-            }
-            catch(IOException e) {
-                System.out.println("Error in closing the buffer");
+            } catch (IOException e) {
+                System.out.println("Error when closing the buffer");
             }
         }
     }
