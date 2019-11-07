@@ -29,9 +29,8 @@ public class URBroadcast implements Runnable {
             broadcast(message.getSourceID(), message.getMessageID());
         }
 
-        if (ackMessages.get(ms).get() > (Da_proc.getNumProcesses() / 2)) {
+        if (ackMessages.getOrDefault(ms, new AtomicInteger(0)).get() > (Da_proc.getNumProcesses() / 2)) {
             if (delivered.putIfAbsent(ms, true) == null)
-                //OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
                 FIFOBroadcast.deliver(ms);
         }
     }

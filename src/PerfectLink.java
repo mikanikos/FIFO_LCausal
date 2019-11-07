@@ -12,10 +12,6 @@ public class PerfectLink implements Runnable {
     public static ConcurrentLinkedQueue<MessageData> messages = new ConcurrentLinkedQueue<>();
     private static Sender sender;
 
-    public static void closeSendingSocket() {
-        sender.getSocket().close();
-    }
-
     static {
         try {
             sender = new Sender();

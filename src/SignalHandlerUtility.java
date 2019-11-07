@@ -33,11 +33,7 @@ public class SignalHandlerUtility extends Thread {
 	private void stopApp() throws InterruptedException {
 		System.out.println("Immediately stopping network packet processing");
 		Da_proc.stopRunning();
-
 		OutputLogger.writeLogToFile();
-
-		//Thread.sleep(500);
-
 		System.exit(0);
 	}
 

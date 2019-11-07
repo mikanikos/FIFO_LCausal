@@ -27,8 +27,4 @@ public class Sender {
             e.printStackTrace();
         }
     }
-
-//    public void close() {
-//        socket.close();
-//    }
 }

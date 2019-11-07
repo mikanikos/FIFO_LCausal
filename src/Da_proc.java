@@ -64,7 +64,7 @@ public class Da_proc {
         new Thread(new PerfectLink()).start();
 
         while(SignalHandlerUtility.wait_for_start) {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }
 
         // start broadcast
@@ -106,15 +106,12 @@ public class Da_proc {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        finally
-        {
-            try
-            {
+        finally {
+            try {
                 assert buffer != null;
                 buffer.close();
             }
-            catch(IOException e)
-            {
+            catch(IOException e) {
                 System.out.println("Error in closing the buffer");
             }
         }
