@@ -1,6 +1,11 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -16,6 +21,8 @@ public class Da_proc {
     private static ConcurrentMap<Integer, ProcessData> processes;
     // Use boolean value to set packet processing status
     private static boolean running = true;
+    // Dependencies
+    private static Map<Integer, List<Integer>> dependencies;
 
     public static int getNumProcesses() { return numProcesses; }
 
@@ -53,7 +60,7 @@ public class Da_proc {
 
         // parse arguments, including membership
         id = Integer.parseInt(args[0]);
-        main_instance.parse_membership(args[1]);
+    	main_instance.parse_membership(args[1]);
         numMessages = Integer.parseInt(args[2]);
 
 
@@ -95,17 +102,34 @@ public class Da_proc {
         try {
             buffer = new BufferedReader(new FileReader(filename));
             while ((line = buffer.readLine()) != null) {
-
+            	
                 String[] fields = line.split(" ");
                 if (fields.length != 0) {
 
-                    if (fields.length == 1)
-                        numProcesses = Integer.parseInt(fields[0]);
-                    else
-                        processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
-                }
-
+	                if (fields.length == 1) {
+	                    numProcesses = Integer.parseInt(fields[0]);
+	                }
+	                else {
+	            		if (Integer.parseInt(fields[0]) <= numProcesses) {
+	        				processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
+	            		} 
+	            		else {
+	            			List<Integer> dependencyId = new ArrayList<Integer>();
+	            			if (fields.length == 1) {
+	            				dependencies.put(Integer.parseInt(fields[0]), Collections.emptyList());
+	            			}
+	            			else {
+	            				for (int j = 1; j <= fields.length; j++) {
+	                				dependencyId.add(Integer.parseInt(fields[j]));
+	                			}
+                			dependencies.put(Integer.parseInt(fields[0]), dependencyId);
+                			
+                    		}
+            			}
+            		}
+        		}		
             }
+
         } catch (IOException e) {
             System.out.println("Error when parsing the membership file");
         } finally {
