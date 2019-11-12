@@ -21,15 +21,12 @@ public class LCausalBroadcast {
 
         while(true) {
             ms = new MessageSource(ms.getSourceID(), senderNextID.get(ms.getSourceID()).get());
-
-            // check if we can deliver the message (i.e. if the message with the next id expected has arrived)
-            if (messages.remove(ms) != null) {
-                // write to log
-                OutputLogger.writeLog("d " + ms.getSourceID() + " " + ms.getMessageID());
-                // compute next id because we could still have other messages to deliver
-                senderNextID.computeIfPresent(ms.getSourceID(), (key, value) -> new AtomicInteger(value.incrementAndGet()));
-            } else {
-                break;
+            
+            if (Da_proc.getProcesses().get(ms.getSourceID()) == null) {
+            	FIFOBroadcast.deliver(ms);
+            }
+            else {
+            	System.out.println("LCausal broadcast.");
             }
         }
     }

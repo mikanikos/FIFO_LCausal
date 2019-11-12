@@ -63,7 +63,6 @@ public class Da_proc {
     	main_instance.parse_membership(args[1]);
         numMessages = Integer.parseInt(args[2]);
 
-
         // start threads for incoming UDP packets
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
@@ -101,33 +100,29 @@ public class Da_proc {
 
         try {
             buffer = new BufferedReader(new FileReader(filename));
+            int counter = 0;
+            
             while ((line = buffer.readLine()) != null) {
             	
                 String[] fields = line.split(" ");
                 if (fields.length != 0) {
 
-	                if (fields.length == 1) {
+	                if (counter == 0) {
 	                    numProcesses = Integer.parseInt(fields[0]);
 	                }
-	                else {
-	            		if (Integer.parseInt(fields[0]) <= numProcesses) {
-	        				processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
-	            		} 
-	            		else {
-	            			List<Integer> dependencyId = new ArrayList<Integer>();
-	            			if (fields.length == 1) {
-	            				dependencies.put(Integer.parseInt(fields[0]), Collections.emptyList());
-	            			}
-	            			else {
-	            				for (int j = 1; j <= fields.length; j++) {
-	                				dependencyId.add(Integer.parseInt(fields[j]));
-	                			}
-                			dependencies.put(Integer.parseInt(fields[0]), dependencyId);
-                			
-                    		}
-            			}
-            		}
-        		}		
+	                
+	                if (0 < counter && counter <= numProcesses) {
+	                	processes.put(Integer.parseInt(fields[0]), new ProcessData(Integer.parseInt(fields[0]), fields[1], Integer.parseInt(fields[2])));
+	                }
+	                
+	                if (counter > numProcesses) {
+	                	for (int i = 1; i < fields.length; i++) {
+	                		processes.get(Integer.parseInt(fields[0])).getDependencies().add(Integer.parseInt(fields[i]));
+	                	}
+	                }
+	                counter++;
+        		}
+                
             }
 
         } catch (IOException e) {

@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 // Process data
 public class ProcessData {
 
@@ -7,9 +10,15 @@ public class ProcessData {
     private String ipAddress;
     // port where it received
     private int port;
+    // dependencies
+    private List<Integer> dependencies;
 
     public int getId() {
         return id;
+    }
+    
+    public List<Integer> getDependencies() {
+        return dependencies;
     }
 
     public String getIpAddress() {
@@ -24,6 +33,7 @@ public class ProcessData {
         this.id = id;
         this.ipAddress = ipAddress;
         this.port = port;
+        this.dependencies = new ArrayList<Integer>();
     }
 
 }
