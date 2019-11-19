@@ -17,7 +17,7 @@ public class PerfectLink implements Runnable {
     // receiving queue for incoming messages
     public static ConcurrentLinkedQueue<MessageData> receivingQueue = new ConcurrentLinkedQueue<>();
 
-    // Sender instance to send messages and acknowledgements
+    // Sender instance to send messages and acknowledgement
     private static Sender sender;
 
     static {
@@ -55,7 +55,7 @@ public class PerfectLink implements Runnable {
 
                     // Then process the message and send it to URB
                     if (delivered.putIfAbsent(message, true) == null) {
-                        URBroadcast.deliver(message);
+                         URBroadcast.deliver(message);
                     }
                 }
             }

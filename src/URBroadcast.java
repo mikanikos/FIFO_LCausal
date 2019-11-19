@@ -37,7 +37,7 @@ public class URBroadcast implements Runnable {
     public static void deliver(MessageData message) {
         MessageSource ms = new MessageSource(message.getSourceID(), message.getMessageID());
 
-        // increase the number of acknowledgements received for this message id from the source
+        // increase the number of acknowledgement received for this message id from the source
         // using 2 initially because the message is already acknowledged by me since the current process is handling the message
         if (ackMessages.putIfAbsent(ms, new AtomicInteger(2)) != null) {
             ackMessages.computeIfPresent(ms, (key, value) -> new AtomicInteger(value.incrementAndGet()));
@@ -46,10 +46,19 @@ public class URBroadcast implements Runnable {
             broadcast(message.getSourceID(), message.getMessageID());
         }
 
-        // Check if I received a majority of acknowledgements: if yes, URB delivers it
+        // Check if I received a majority of acknowledgement: if yes, URB delivers it
         if (ackMessages.getOrDefault(ms, new AtomicInteger(0)).get() > (Da_proc.getNumProcesses() / 2)) {
-            if (delivered.putIfAbsent(ms, true) == null)
-                FIFOBroadcast.deliver(ms);
+            if (delivered.putIfAbsent(ms, true) == null) {
+            	
+            	if (Da_proc.getProcesses().get(ms.getSourceID()).getDependencies().isEmpty()) {
+                	System.out.println("FIFO broadcast.");
+                	FIFOBroadcast.deliver(ms);
+                } else {
+                	System.out.println("LCausal broadcast.");
+                	LCausalBroadcast.deliver(ms);
+                }
+            	
+            }
         }
     }
 
