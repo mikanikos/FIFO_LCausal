@@ -1,6 +1,4 @@
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -23,8 +21,6 @@ public class PerfectLink implements Runnable {
     static {
         try {
             sender = new Sender();
-        } catch (SocketException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,8 +47,6 @@ public class PerfectLink implements Runnable {
                     MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true, Da_proc.getVectorClockSend());
                     try {
                         sender.send(ackMessage);
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

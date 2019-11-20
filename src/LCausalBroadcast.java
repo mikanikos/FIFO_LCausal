@@ -9,7 +9,7 @@ public class LCausalBroadcast {
 
     public LCausalBroadcast() {
         for (int i = 1; i <= Da_proc.getNumProcesses(); i++) {
-            messagesPerProcess.putIfAbsent(i, new TreeSet<>(new MessageDataComparator()));
+            messagesPerProcess.putIfAbsent(i, new TreeSet<>(Comparator.comparingInt(MessageData::getMessageID)));
         }
     }
 
