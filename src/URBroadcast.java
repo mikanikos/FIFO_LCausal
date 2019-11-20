@@ -20,14 +20,14 @@ public class URBroadcast implements Runnable {
     }
 
     // broadcast a given message to all the processes
-    public static void broadcast(int sourceID, int messageID) {
+    public static void broadcast(int sourceID, int messageID, ConcurrentMap<Integer, AtomicInteger> vectorClock) {
         // Message is already acknowledged for me, so put it now
         ackMessages.putIfAbsent(new MessageSource(sourceID, messageID), new AtomicInteger(1));
         for (ProcessData p : Da_proc.getProcesses().values()) {
             // not sending message to myself
             if (p.getId() != Da_proc.getId()) {
                 // create message to be sent with all the meta information
-                MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false);
+                MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false, vectorClock);
                 // add message to the sending queue
                 sendingQueue.add(message);
             }
@@ -43,13 +43,13 @@ public class URBroadcast implements Runnable {
             ackMessages.computeIfPresent(ms, (key, value) -> new AtomicInteger(value.incrementAndGet()));
         } else {
             // if this is the first time I get this message, I relay it to all the other processes according to the protocol
-            broadcast(message.getSourceID(), message.getMessageID());
+            broadcast(message.getSourceID(), message.getMessageID(), message.getVectorClock());
         }
 
         // Check if I received a majority of acknowledgements: if yes, URB delivers it
         if (ackMessages.getOrDefault(ms, new AtomicInteger(0)).get() > (Da_proc.getNumProcesses() / 2)) {
             if (delivered.putIfAbsent(ms, true) == null)
-                FIFOBroadcast.deliver(ms);
+                LCausalBroadcast.deliver(message);
         }
     }
 

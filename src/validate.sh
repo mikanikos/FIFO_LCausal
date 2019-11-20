@@ -9,7 +9,7 @@ fi
 
 # time to wait for correct processes to broadcast all messages (in seconds)
 # (should be adapted to the number of messages to send)
-time_to_finish=2
+time_to_finish=20
 
 init_time=2
 
@@ -36,11 +36,11 @@ if [ "$1" = "FIFO" ]; then
 echo "writing FIFO input..."
  
 echo "5
-1 127.0.0.1 12001
-2 127.0.0.1 12002
-3 127.0.0.1 12003
-4 127.0.0.1 12004
-5 127.0.0.1 12005" > membership
+1 127.0.0.1 12011
+2 127.0.0.1 12012
+3 127.0.0.1 12013
+4 127.0.0.1 12014
+5 127.0.0.1 12015" > membership
 
 else 
 echo "writing LCausal input..."

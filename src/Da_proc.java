@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Da_proc {
 
@@ -21,8 +22,12 @@ public class Da_proc {
     private static ConcurrentMap<Integer, ProcessData> processes;
     // Use boolean value to set packet processing status
     private static boolean running = true;
-    // Dependencies
-    private static Map<Integer, List<Integer>> dependencies;
+    // vector clock
+    private static ConcurrentMap<Integer, AtomicInteger> vectorClock;
+
+    public static ConcurrentMap<Integer, AtomicInteger> getVectorClock() {
+        return vectorClock;
+    }
 
     public static int getNumProcesses() { return numProcesses; }
 
@@ -47,6 +52,7 @@ public class Da_proc {
     }
 
     public Da_proc() {
+        vectorClock = new ConcurrentHashMap<>();
         processes = new ConcurrentHashMap<>();
         // set up signal handlers
         new SignalHandlerUtility();
@@ -63,6 +69,11 @@ public class Da_proc {
     	main_instance.parse_membership(args[1]);
         numMessages = Integer.parseInt(args[2]);
 
+        // initialize vector clock
+        for (Integer id : Da_proc.getProcesses().keySet()) {
+            vectorClock.put(id, new AtomicInteger(0));
+        }
+
         // start threads for incoming UDP packets
         int myPort = processes.get(id).getPort();
         new Thread(new Receiver(myPort)).start();
@@ -73,15 +84,20 @@ public class Da_proc {
         // start thread for sending queue
         new Thread(new PerfectLink()).start();
 
+        new LCausalBroadcast();
+
         // wait user signal to start broadcasting
         while (SignalHandlerUtility.wait_for_start) {
             Thread.sleep(100);
         }
 
         // start broadcast
-        System.out.println("Broadcasting " + main_instance.numMessages + " messages");
+        System.out.println("Broadcasting " + numMessages + " messages");
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
-            URBroadcast.broadcast(Da_proc.getId(), seq_nr);
+
+            ConcurrentMap<Integer, AtomicInteger> copy = copyVectorClock(vectorClock);
+            copy.put(Da_proc.getId(), new AtomicInteger(seq_nr-1));
+            URBroadcast.broadcast(Da_proc.getId(), seq_nr, copy);
 
             // write broadcast message to the output file
             OutputLogger.writeLog("b " + seq_nr);
@@ -91,6 +107,15 @@ public class Da_proc {
         while (true) {
             Thread.sleep(1000);
         }
+    }
+
+
+    public static ConcurrentMap<Integer, AtomicInteger> copyVectorClock(ConcurrentMap<Integer, AtomicInteger> original) {
+        ConcurrentMap<Integer, AtomicInteger> copy = new ConcurrentHashMap<>();
+        for (Map.Entry<Integer, AtomicInteger> entry : original.entrySet()) {
+            copy.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
+        }
+        return copy;
     }
 
     // parse input membership file

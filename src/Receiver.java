@@ -1,10 +1,12 @@
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.*;
 
 public class Receiver implements Runnable {
 
     private DatagramSocket socket;
-    private byte[] buffer = new byte[16];
+    private byte[] buffer = new byte[60000];
 
     Receiver(int port) throws IOException {
         this.socket = new DatagramSocket(port);

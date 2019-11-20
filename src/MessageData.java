@@ -1,7 +1,14 @@
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 // Store all message data that are important for the protocols used
-public class MessageData {
+public class MessageData implements Serializable {
 
     // id of the source of the message (creator)
     private int sourceID;
@@ -13,7 +20,12 @@ public class MessageData {
     private int messageID;
     // identify if the message is an ack
     private boolean isAck;
+    // vector clock
+    private ConcurrentMap<Integer, AtomicInteger> vectorClock;
 
+    public ConcurrentMap<Integer, AtomicInteger> getVectorClock() {
+        return vectorClock;
+    }
 
     public int getSourceID() { return sourceID; }
 
@@ -31,12 +43,13 @@ public class MessageData {
         return isAck;
     }
 
-    public MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck) {
+    public MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck, ConcurrentMap<Integer, AtomicInteger> vectorClock) {
         this.sourceID = sourceID;
         this.senderID = senderID;
         this.receiverID = receiverID;
         this.messageID = messageID;
         this.isAck = isAck;
+        this.vectorClock = vectorClock;
     }
 
     @Override
@@ -56,7 +69,11 @@ public class MessageData {
 
     @Override
     public String toString() {
-        return sourceID  + " " + senderID + " " + receiverID + " "  + messageID + " " + isAck;
+        String mapAsString = vectorClock.keySet().stream()
+                .map(key -> key + "=" + vectorClock.get(key))
+                .collect(Collectors.joining(","));
+
+        return sourceID  + " " + senderID + " " + receiverID + " "  + messageID + " " + isAck + " " + mapAsString;
     }
 
     // Parse message: convert from string to MessageData
@@ -68,6 +85,15 @@ public class MessageData {
         int seqID = Integer.parseInt(parsedMessage[3]);
         boolean isAck = Boolean.parseBoolean(parsedMessage[4]);
 
-        return new MessageData(sourceID, senderID, receiverID, seqID, isAck);
+        Map<String, String> map = Arrays.stream(parsedMessage[5].split(","))
+                .map(entry -> entry.split("="))
+                .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
+
+        ConcurrentMap<Integer, AtomicInteger> vector = new ConcurrentHashMap<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            vector.put(Integer.parseInt(entry.getKey()), new AtomicInteger(Integer.parseInt(entry.getValue())));
+        }
+
+        return new MessageData(sourceID, senderID, receiverID, seqID, isAck, vector);
     }
 }
