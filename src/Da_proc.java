@@ -22,11 +22,18 @@ public class Da_proc {
     private static ConcurrentMap<Integer, ProcessData> processes;
     // Use boolean value to set packet processing status
     private static boolean running = true;
-    // vector clock
-    private static ConcurrentMap<Integer, AtomicInteger> vectorClock;
+    // vector clock send
+    private static ConcurrentMap<Integer, AtomicInteger> vectorClockSend;
 
-    public static ConcurrentMap<Integer, AtomicInteger> getVectorClock() {
-        return vectorClock;
+    // vector clock receive
+    private static ConcurrentMap<Integer, AtomicInteger> vectorClockRecv;
+
+    public static ConcurrentMap<Integer, AtomicInteger> getVectorClockSend() {
+        return vectorClockSend;
+    }
+
+    public static ConcurrentMap<Integer, AtomicInteger> getVectorClockRecv() {
+        return vectorClockRecv;
     }
 
     public static int getNumProcesses() { return numProcesses; }
@@ -52,7 +59,8 @@ public class Da_proc {
     }
 
     public Da_proc() {
-        vectorClock = new ConcurrentHashMap<>();
+        vectorClockSend = new ConcurrentHashMap<>();
+        vectorClockRecv = new ConcurrentHashMap<>();
         processes = new ConcurrentHashMap<>();
         // set up signal handlers
         new SignalHandlerUtility();
@@ -71,7 +79,8 @@ public class Da_proc {
 
         // initialize vector clock
         for (Integer id : Da_proc.getProcesses().keySet()) {
-            vectorClock.put(id, new AtomicInteger(0));
+            vectorClockSend.put(id, new AtomicInteger(0));
+            vectorClockRecv.put(id, new AtomicInteger(0));
         }
 
         // start threads for incoming UDP packets
@@ -95,7 +104,7 @@ public class Da_proc {
         System.out.println("Broadcasting " + numMessages + " messages");
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
 
-            ConcurrentMap<Integer, AtomicInteger> copy = copyVectorClock(vectorClock);
+            ConcurrentMap<Integer, AtomicInteger> copy = copyVectorClock(vectorClockSend);
             copy.put(Da_proc.getId(), new AtomicInteger(seq_nr-1));
             URBroadcast.broadcast(Da_proc.getId(), seq_nr, copy);
 

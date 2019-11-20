@@ -26,13 +26,17 @@ public class LCausalBroadcast {
                 Iterator<MessageData> messageDataIterator = messagesPerProcess.get(i).iterator();
                 while (messageDataIterator.hasNext()) {
                     MessageData m = messageDataIterator.next();
-                    if (isVectorClockLessOrEqual(m.getVectorClock(), Da_proc.getVectorClock())) {
+                    if (isVectorClockLessOrEqual(m.getVectorClock(), Da_proc.getVectorClockRecv())) {
                         messageDataIterator.remove();
-                        Da_proc.getVectorClock().get(m.getSourceID()).incrementAndGet();
+                        Da_proc.getVectorClockRecv().get(m.getSourceID()).incrementAndGet();
+                        if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(m.getSourceID())) {
+                            Da_proc.getVectorClockSend().get(m.getSourceID()).incrementAndGet();
+                        }
+
                         OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
                         keepRunning = true;
-                        System.out.println("Delivered : " + "d " + m.getSourceID() + " " + m.getMessageID());
-                        System.out.println(messagesPerProcess.get(i).size());
+//                        System.out.println("Delivered : " + "d " + m.getSourceID() + " " + m.getMessageID());
+//                        System.out.println(messagesPerProcess.get(i).size());
                     }
                 }
             }
