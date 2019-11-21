@@ -26,15 +26,15 @@ public class Da_proc {
     private static ConcurrentMap<Integer, AtomicInteger> vectorClockSend;
 
     // vector clock receive
-    private static ConcurrentMap<Integer, AtomicInteger> vectorClockRecv;
+    //private static ConcurrentMap<Integer, AtomicInteger> vectorClockRecv;
 
     public static ConcurrentMap<Integer, AtomicInteger> getVectorClockSend() {
         return vectorClockSend;
     }
 
-    public static ConcurrentMap<Integer, AtomicInteger> getVectorClockRecv() {
-        return vectorClockRecv;
-    }
+//    public static ConcurrentMap<Integer, AtomicInteger> getVectorClockRecv() {
+//        return vectorClockRecv;
+//    }
 
     public static int getNumProcesses() { return numProcesses; }
 
@@ -60,7 +60,7 @@ public class Da_proc {
 
     public Da_proc() {
         vectorClockSend = new ConcurrentHashMap<>();
-        vectorClockRecv = new ConcurrentHashMap<>();
+        //vectorClockRecv = new ConcurrentHashMap<>();
         processes = new ConcurrentHashMap<>();
         // set up signal handlers
         new SignalHandlerUtility();
@@ -80,7 +80,7 @@ public class Da_proc {
         // initialize vector clock
         for (Integer id : Da_proc.getProcesses().keySet()) {
             vectorClockSend.put(id, new AtomicInteger(0));
-            vectorClockRecv.put(id, new AtomicInteger(0));
+            //vectorClockRecv.put(id, new AtomicInteger(0));
         }
 
         // start threads for incoming UDP packets
@@ -94,6 +94,13 @@ public class Da_proc {
         new Thread(new PerfectLink()).start();
 
         new LCausalBroadcast();
+
+        // start thread for sending queue
+        new Thread(new LCausalBroadcast()).start();
+
+        // start thread for sending queue
+        new Thread(new FIFOBroadcast()).start();
+
 
         // wait user signal to start broadcasting
         while (SignalHandlerUtility.wait_for_start) {

@@ -1,11 +1,14 @@
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LCausalBroadcast {
+public class LCausalBroadcast implements Runnable {
 
     // messages delivered by URB
-    private static Map<Integer, SortedSet<MessageData>> messagesPerProcess = new HashMap<>();
+    public static Map<Integer, SortedSet<MessageData>> messagesPerProcess = new HashMap<>();
+
+    public static ConcurrentLinkedQueue<MessageData> causalQueue = new ConcurrentLinkedQueue<>();
 
     public LCausalBroadcast() {
         for (int i = 1; i <= Da_proc.getNumProcesses(); i++) {
@@ -14,29 +17,40 @@ public class LCausalBroadcast {
     }
 
     // Deliver message for LCausal protocol
-    public static void deliver(MessageData md) {
+    public void run() {
 
-        // Store the message
-        messagesPerProcess.get(md.getSourceID()).add(md);
+        while(Da_proc.isRunning()) {
+            MessageData md;
+            // get head of the queue and process it
+            while ((md = causalQueue.poll()) != null) {
 
-        boolean keepRunning = true;
-        while (keepRunning) {
-            keepRunning = false;
-            for (int i = 1; i <= Da_proc.getNumProcesses(); i++) {
-                Iterator<MessageData> messageDataIterator = messagesPerProcess.get(i).iterator();
-                while (messageDataIterator.hasNext()) {
-                    MessageData m = messageDataIterator.next();
-                    if (isVectorClockLessOrEqual(m.getVectorClock(), Da_proc.getVectorClockRecv())) {
-                        messageDataIterator.remove();
-                        Da_proc.getVectorClockRecv().get(m.getSourceID()).incrementAndGet();
-                        if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(m.getSourceID())) {
-                            Da_proc.getVectorClockSend().get(m.getSourceID()).incrementAndGet();
-                        }
+                //System.out.println("LCausal from " + Da_proc.getId() + ": " + md.getSourceID());
 
-                        OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
-                        keepRunning = true;
+                // Store the message
+                messagesPerProcess.get(md.getSourceID()).add(md);
+
+                boolean keepRunning = true;
+                while (keepRunning) {
+                    keepRunning = false;
+                    for (int i = 1; i <= Da_proc.getNumProcesses(); i++) {
+                        if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(i)) {
+                            Iterator<MessageData> messageDataIterator = messagesPerProcess.get(i).iterator();
+                            while (messageDataIterator.hasNext()) {
+                                MessageData m = messageDataIterator.next();
+                                if (isVectorClockLessOrEqual(m.getVectorClock(), Da_proc.getVectorClockSend())) {
+                                    messageDataIterator.remove();
+                                    Da_proc.getVectorClockSend().get(m.getSourceID()).incrementAndGet();
+//                        if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(m.getSourceID())) {
+//                            Da_proc.getVectorClockSend().get(m.getSourceID()).incrementAndGet();
+//                        }
+
+                                    OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
+                                    keepRunning = true;
 //                        System.out.println("Delivered : " + "d " + m.getSourceID() + " " + m.getMessageID());
 //                        System.out.println(messagesPerProcess.get(i).size());
+                                }
+                            }
+                        }
                     }
                 }
             }
