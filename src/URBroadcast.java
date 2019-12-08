@@ -1,8 +1,11 @@
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Uniform Reliable Broadcast abstraction
 public class URBroadcast implements Runnable {
+
     // ackMessages for URB
     private static ConcurrentMap<MessageSource, AtomicInteger> ackMessages = new ConcurrentHashMap<>();
 
@@ -20,7 +23,6 @@ public class URBroadcast implements Runnable {
     public static void broadcast(int sourceID, int messageID, ConcurrentMap<Integer, AtomicInteger> vectorClock) {
         // Message is already acknowledged for me, so put it now
         ackMessages.putIfAbsent(new MessageSource(sourceID, messageID), new AtomicInteger(1));
-  
         for (ProcessData p : Da_proc.getProcesses().values()) {
             // not sending message to myself
             if (p.getId() != Da_proc.getId()) {
@@ -34,7 +36,7 @@ public class URBroadcast implements Runnable {
 
     public static void deliver(MessageData message) {
         MessageSource ms = new MessageSource(message.getSourceID(), message.getMessageID());
-      
+
         // increase the number of acknowledgement received for this message id from the source
         // using 2 initially because the message is already acknowledged by me since the current process is handling the message
         if (ackMessages.putIfAbsent(ms, new AtomicInteger(2)) != null) {
@@ -60,7 +62,6 @@ public class URBroadcast implements Runnable {
     public void run() {
         // sending packets from the queue until the termination signal
         while(Da_proc.isRunning()) {
-
             MessageData m;
             // get head of the queue and send it
             while ((m = sendingQueue.poll()) != null)

@@ -73,7 +73,6 @@ public class Da_proc {
 
         // start threads for incoming UDP packets
         int myPort = processes.get(id).getPort();
-
         new Thread(new Receiver(myPort)).start();
 
         // start thread for receiving queue
@@ -99,6 +98,7 @@ public class Da_proc {
         // start broadcast
         System.out.println("Broadcasting " + numMessages + " messages");
         for (int seq_nr = 1; seq_nr <= Da_proc.getNumMessages() && running; seq_nr++) {
+
             ConcurrentMap<Integer, AtomicInteger> copy = copyVectorClock(vectorClockSend);
             copy.put(Da_proc.getId(), new AtomicInteger(seq_nr-1));
             URBroadcast.broadcast(Da_proc.getId(), seq_nr, copy);

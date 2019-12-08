@@ -2,10 +2,10 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.PriorityBlockingQueue;
 
 // Perfect Link abstraction
 public class PerfectLink implements Runnable {
+
     // ackMessages for PL
     private static ConcurrentMap<String, Boolean> ackMessages = new ConcurrentHashMap<>();
 
@@ -25,6 +25,7 @@ public class PerfectLink implements Runnable {
             e.printStackTrace();
         }
     }
+
 
     public static ConcurrentLinkedQueue<MessageData> getReceivingQueue() {
         return receivingQueue;
@@ -49,7 +50,7 @@ public class PerfectLink implements Runnable {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                  
+
                     // Then process the message and send it to URB
                     if (delivered.putIfAbsent(message, true) == null) {
                         URBroadcast.deliver(message);
@@ -74,6 +75,5 @@ public class PerfectLink implements Runnable {
             // Since the message was not already acknowledged, we put it at the end of the queue
             URBroadcast.getSendingQueue().add(message);
         }
-        PerfectLink.messages.add(message);
     }
 }
