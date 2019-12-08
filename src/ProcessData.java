@@ -1,25 +1,39 @@
-class ProcessData {
+import java.util.ArrayList;
+import java.util.List;
 
+// Process data
+public class ProcessData {
+
+    // Process id
     private int id;
+    // IP address where it received
+    private String ipAddress;
+    // Port where it received
+    private int port;
+    // Dependencies
+    private List<Integer> dependencies;
 
-    int getId() {
+    public int getId() {
         return id;
     }
+    
+    public List<Integer> getDependencies() {
+        return dependencies;
+    }
 
-    String getIpAddress() {
+    public String getIpAddress() {
         return ipAddress;
     }
 
-    private String ipAddress;
-    private int port;
+    public int getPort() {
+        return this.port;
+    }
 
-    ProcessData(int id, String ipAddress, int port) {
+    public ProcessData(int id, String ipAddress, int port) {
         this.id = id;
         this.ipAddress = ipAddress;
         this.port = port;
+        this.dependencies = new ArrayList<Integer>();
     }
 
-    int getPort() {
-        return this.port;
-    }
 }

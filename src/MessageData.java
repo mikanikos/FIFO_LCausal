@@ -1,42 +1,55 @@
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-public class MessageData implements Delayed {
-
+// Store all message data that are important for the protocols used
+public class MessageData implements Serializable {
+    // id of the source of the message (creator)
     private int sourceID;
+    // id of the sender of the message
     private int senderID;
+    // id of the supposed receiver of the message
     private int receiverID;
+    // message id
     private int messageID;
+    // identify if the message is an ack
     private boolean isAck;
-    private long time;
+  
+    // vector clock
+    private ConcurrentMap<Integer, AtomicInteger> vectorClock;
 
-    public long getTime() {
-        return time;
+    public ConcurrentMap<Integer, AtomicInteger> getVectorClock() {
+        return vectorClock;
     }
 
-    public void setTime(long time) {
-        this.time = System.currentTimeMillis() + time;
-    }
+    public int getSourceID() { return sourceID; }
 
-    int getSourceID() { return sourceID; }
-    int getSenderID() {
+    public int getSenderID() {
         return senderID;
     }
-    int getReceiverID() { return receiverID; }
-    int getMessageID() {
+
+    public int getReceiverID() { return receiverID; }
+
+    public int getMessageID() {
         return messageID;
     }
-    boolean isAck() {
+
+    public boolean isAck() {
         return isAck;
     }
 
-    MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck) {
+    public MessageData(int sourceID, int senderID, int receiverID, int messageID, boolean isAck, ConcurrentMap<Integer, AtomicInteger> vectorClock) {
         this.sourceID = sourceID;
         this.senderID = senderID;
         this.receiverID = receiverID;
         this.messageID = messageID;
         this.isAck = isAck;
+        this.vectorClock = vectorClock;
     }
 
     @Override
@@ -56,10 +69,15 @@ public class MessageData implements Delayed {
 
     @Override
     public String toString() {
-        return sourceID  + " " + senderID + " " + receiverID + " "  + messageID + " " + isAck;
+        String mapAsString = vectorClock.keySet().stream()
+                .map(key -> key + "=" + vectorClock.get(key))
+                .collect(Collectors.joining(","));
+
+        return sourceID  + " " + senderID + " " + receiverID + " "  + messageID + " " + isAck + " " + mapAsString;
     }
 
-    static MessageData parseMessage(String stringMessage) {
+    // Parse message: convert from string to MessageData
+    public static MessageData parseMessage(String stringMessage) {
         String[] parsedMessage = stringMessage.split(" ");
         int sourceID = Integer.parseInt(parsedMessage[0]);
         int senderID = Integer.parseInt(parsedMessage[1]);
@@ -67,7 +85,16 @@ public class MessageData implements Delayed {
         int seqID = Integer.parseInt(parsedMessage[3]);
         boolean isAck = Boolean.parseBoolean(parsedMessage[4]);
 
-        return new MessageData(sourceID, senderID, receiverID, seqID, isAck);
+        Map<String, String> map = Arrays.stream(parsedMessage[5].split(","))
+                .map(entry -> entry.split("="))
+                .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
+
+        ConcurrentMap<Integer, AtomicInteger> vector = new ConcurrentHashMap<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            vector.put(Integer.parseInt(entry.getKey()), new AtomicInteger(Integer.parseInt(entry.getValue())));
+        }
+
+        return new MessageData(sourceID, senderID, receiverID, seqID, isAck, vector);
     }
 
     @Override

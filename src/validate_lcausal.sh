@@ -9,7 +9,7 @@ fi
 
 # time to wait for correct processes to broadcast all messages (in seconds)
 # (should be adapted to the number of messages to send)
-time_to_finish=5
+time_to_finish=2
 
 init_time=2
 
@@ -36,26 +36,26 @@ if [ "$1" = "FIFO" ]; then
 echo "writing FIFO input..."
  
 echo "5
-1 127.0.0.1 12021
-2 127.0.0.1 12022
-3 127.0.0.1 12023
-4 127.0.0.1 12024
-5 127.0.0.1 12025" > membership
+1 127.0.0.1 12011
+2 127.0.0.1 12012
+3 127.0.0.1 12013
+4 127.0.0.1 12014
+5 127.0.0.1 12015" > membership
 
 else 
 echo "writing LCausal input..."
     
 echo "5
-1 127.0.0.1 12001
-2 127.0.0.1 12002
-3 127.0.0.1 12003
-4 127.0.0.1 12004
-5 127.0.0.1 12005
-1 4 5
-2 1
-3
-4
-5" > membership
+1 127.0.0.1 12031
+2 127.0.0.1 12032
+3 127.0.0.1 12033
+4 127.0.0.1 12034
+5 127.0.0.1 12035
+1 1 2 3 4 5
+2 1 2 3 4 5
+3 1 2 3 4 5
+4 1 2 3 4 5
+5 1 2 3 4 5" > membership
 fi
 
 # start 5 processes, each broadcasting 100 messages
@@ -64,7 +64,7 @@ do
     if [ "$2" = "C" ]; then
       ./da_proc $i membership 100 &
     else
-      java Da_proc $i membership 100000 &
+      java Da_proc $i membership 100 &
     fi
     da_proc_id[$i]=$!
 done
@@ -72,6 +72,13 @@ done
 # leave some time for process initialization
 sleep $init_time
 
+# do some nasty stuff like process crashes and delays
+# example:
+kill -STOP "${da_proc_id[3]}" # pause process 3
+sleep 1
+kill -TERM "${da_proc_id[2]}" # crash process 2
+da_proc_id[2]=""
+kill -CONT "${da_proc_id[3]}" # resume process 3
 
 # start broadcasting
 for i in `seq 1 5`
@@ -80,6 +87,14 @@ do
 	kill -USR2 "${da_proc_id[$i]}"
     fi
 done
+
+# do some more nasty stuff
+# example:
+kill -TERM "${da_proc_id[4]}" # crash process 4
+da_proc_id[4]=""
+kill -STOP "${da_proc_id[1]}" # pause process 1
+sleep 0.5
+kill -CONT "${da_proc_id[1]}" # resume process 1
 
 # leave some time for the correct processes to broadcast all messages
 sleep $time_to_finish
@@ -101,6 +116,6 @@ do
 done
 
 # check logs for correctness
-./check_output.sh 1 3 5
+./check_output2.sh 1 3 5
 
 echo "Correctness test done."

@@ -1,51 +1,70 @@
 import java.util.*;
 import java.util.concurrent.*;
 
+// Uniform Reliable Broadcast abstraction
 public class URBroadcast implements Runnable {
+    // ackMessages for URB
+    private static ConcurrentMap<MessageSource, AtomicInteger> ackMessages = new ConcurrentHashMap<>();
 
-    private static Map<MessageSource, Integer> ackMessages = new HashMap<>();
-    private static Set<MessageSource> delivered = new HashSet<>();
-    //public static DelayQueue<MessageData> processQueue = new DelayQueue<>();
-    public static ConcurrentLinkedQueue<MessageData> processQueue = new ConcurrentLinkedQueue<>();
-    //public static PriorityBlockingQueue<MessageData> processQueue = new PriorityBlockingQueue<>(Da_proc.getNumMessages() * Da_proc.getNumProcesses(), Comparator.comparingInt(MessageData::getMessageID));
+    // delivered messages by URB
+    private static ConcurrentMap<MessageSource, Boolean> delivered = new ConcurrentHashMap<>();
 
+    // sending queue for outgoing messages
+    private static ConcurrentLinkedQueue<MessageData> sendingQueue = new ConcurrentLinkedQueue<>();
 
-    public static void broadcast(int sourceID, int messageID) {
+    public static ConcurrentLinkedQueue<MessageData> getSendingQueue() {
+        return sendingQueue;
+    }
 
-        ackMessages.putIfAbsent(new MessageSource(sourceID, messageID), 1);
+    // broadcast a given message to all the processes
+    public static void broadcast(int sourceID, int messageID, ConcurrentMap<Integer, AtomicInteger> vectorClock) {
+        // Message is already acknowledged for me, so put it now
+        ackMessages.putIfAbsent(new MessageSource(sourceID, messageID), new AtomicInteger(1));
+  
         for (ProcessData p : Da_proc.getProcesses().values()) {
+            // not sending message to myself
             if (p.getId() != Da_proc.getId()) {
-                MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false);
-                processQueue.offer(message);
+                // create message to be sent with all the meta information
+                MessageData message = new MessageData(sourceID, Da_proc.getId(), p.getId(), messageID, false, vectorClock);
+                // add message to the sending queue
+                sendingQueue.add(message);
             }
         }
     }
 
     public static void deliver(MessageData message) {
         MessageSource ms = new MessageSource(message.getSourceID(), message.getMessageID());
-
-        if (ackMessages.putIfAbsent(ms, 2) != null) {
-            ackMessages.computeIfPresent(ms, (key, value) -> value+1);
+      
+        // increase the number of acknowledgement received for this message id from the source
+        // using 2 initially because the message is already acknowledged by me since the current process is handling the message
+        if (ackMessages.putIfAbsent(ms, new AtomicInteger(2)) != null) {
+            ackMessages.computeIfPresent(ms, (key, value) -> new AtomicInteger(value.incrementAndGet()));
         } else {
-            broadcast(message.getSourceID(), message.getMessageID());
+            // if this is the first time I get this message, I relay it to all the other processes according to the protocol
+            broadcast(message.getSourceID(), message.getMessageID(), message.getVectorClock());
         }
 
-        if (ackMessages.getOrDefault(ms, 0) > (Da_proc.getNumProcesses() / 2)) {
-            if (!delivered.contains(ms)) {
-                delivered.add(ms);
-                FIFOBroadcast.deliver(ms);
+        // Check if I received a majority of acknowledgement: if yes, URB delivers it
+        if (ackMessages.getOrDefault(ms, new AtomicInteger(0)).get() > (Da_proc.getNumProcesses() / 2)) {
+            if (delivered.putIfAbsent(ms, true) == null) {
+                if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(ms.getSourceID()) &&  Da_proc.getId() != ms.getSourceID())
+                    LCausalBroadcast.causalQueue.add(message);
+                else
+                    FIFOBroadcast.fifoQueue.add(ms);
             }
         }
     }
 
     @Override
+    // process packet sending from queue on a different thread
     public void run() {
+        // sending packets from the queue until the termination signal
         while(Da_proc.isRunning()) {
 
             MessageData m;
-            while ((m = processQueue.poll()) != null)
+            // get head of the queue and send it
+            while ((m = sendingQueue.poll()) != null)
                 PerfectLink.send(m);
-                //new Thread(new PerfectLink(m)).start();
         }
     }
 }

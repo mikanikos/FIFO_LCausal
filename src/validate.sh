@@ -46,11 +46,11 @@ else
 echo "writing LCausal input..."
     
 echo "5
-1 127.0.0.1 12001
-2 127.0.0.1 12002
-3 127.0.0.1 12003
-4 127.0.0.1 12004
-5 127.0.0.1 12005
+1 127.0.0.1 12031
+2 127.0.0.1 12032
+3 127.0.0.1 12033
+4 127.0.0.1 12034
+5 127.0.0.1 12035
 1 4 5
 2 1
 3 1 2
@@ -116,6 +116,7 @@ do
 done
 
 # check logs for correctness
-./check_output.sh 1 3 5
+./check_output.sh 1 3 5 
+python3 check_lcausal.py membership 100 
 
 echo "Correctness test done."
