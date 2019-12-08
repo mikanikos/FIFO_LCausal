@@ -36,11 +36,11 @@ if [ "$1" = "FIFO" ]; then
 echo "writing FIFO input..."
  
 echo "5
-1 127.0.0.1 12001
-2 127.0.0.1 12002
-3 127.0.0.1 12003
-4 127.0.0.1 12004
-5 127.0.0.1 12005" > membership
+1 127.0.0.1 12021
+2 127.0.0.1 12022
+3 127.0.0.1 12023
+4 127.0.0.1 12024
+5 127.0.0.1 12025" > membership
 
 else 
 echo "writing LCausal input..."
@@ -64,7 +64,7 @@ do
     if [ "$2" = "C" ]; then
       ./da_proc $i membership 100 &
     else
-      java Da_proc $i membership 100 &
+      java Da_proc $i membership 100000 &
     fi
     da_proc_id[$i]=$!
 done

@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 // Store all message data that are important for the protocols used
 public class MessageData implements Serializable {
-
     // id of the source of the message (creator)
     private int sourceID;
     // id of the sender of the message
@@ -20,6 +19,7 @@ public class MessageData implements Serializable {
     private int messageID;
     // identify if the message is an ack
     private boolean isAck;
+  
     // vector clock
     private ConcurrentMap<Integer, AtomicInteger> vectorClock;
 
@@ -95,5 +95,22 @@ public class MessageData implements Serializable {
         }
 
         return new MessageData(sourceID, senderID, receiverID, seqID, isAck, vector);
+    }
+
+    @Override
+    public long getDelay(TimeUnit timeUnit) {
+        long diff = time - System.currentTimeMillis();
+        return timeUnit.convert(diff, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed obj) {
+        if (this.time < ((MessageData)obj).time) {
+            return -1;
+        }
+        if (this.time > ((MessageData)obj).time) {
+            return 1;
+        }
+        return 0;
     }
 }
