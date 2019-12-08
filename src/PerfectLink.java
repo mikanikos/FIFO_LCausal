@@ -15,7 +15,7 @@ public class PerfectLink implements Runnable {
     // receiving queue for incoming messages
     public static ConcurrentLinkedQueue<MessageData> receivingQueue = new ConcurrentLinkedQueue<>();
 
-    // Sender instance to send messages and acknowledgements
+    // Sender instance to send messages and acknowledgement
     private static Sender sender;
 
     static {
@@ -37,13 +37,13 @@ public class PerfectLink implements Runnable {
     	
     	while(Da_proc.isRunning()) {
             MessageData message;
-            // get head of the queue and process it
+            // Get head of the queue and process it
             while ((message = receivingQueue.poll()) != null) {
-                // if the message is an ack, I store it so that I can notify the sender part and don't need to send it again
+                // If the message is an ack, I store it so that I can notify the sender part and don't need to send it again
                 if (message.isAck()) {
                     ackMessages.putIfAbsent(message.toString(), false);
                 } else {
-                    // if the message is not an ack, we first need to send an ack to who sent the message
+                    // If the message is not an ack, we first need to send an ack to who sent the message
                     MessageData ackMessage = new MessageData(message.getSourceID(), Da_proc.getId(), message.getSenderID(), message.getMessageID(), true, Da_proc.getVectorClockSend());
                     try {
                         sender.send(ackMessage);

@@ -4,13 +4,13 @@ import java.util.List;
 // Process data
 public class ProcessData {
 
-    // process id
+    // Process id
     private int id;
-    // ip address where it received
+    // IP address where it received
     private String ipAddress;
-    // port where it received
+    // Port where it received
     private int port;
-    // dependencies
+    // Dependencies
     private List<Integer> dependencies;
 
     public int getId() {

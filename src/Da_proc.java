@@ -1,10 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,16 +21,9 @@ public class Da_proc {
     // vector clock send
     private static ConcurrentMap<Integer, AtomicInteger> vectorClockSend;
 
-    // vector clock receive
-    //private static ConcurrentMap<Integer, AtomicInteger> vectorClockRecv;
-
     public static ConcurrentMap<Integer, AtomicInteger> getVectorClockSend() {
         return vectorClockSend;
     }
-
-//    public static ConcurrentMap<Integer, AtomicInteger> getVectorClockRecv() {
-//        return vectorClockRecv;
-//    }
 
     public static int getNumProcesses() { return numProcesses; }
 
@@ -80,7 +69,6 @@ public class Da_proc {
         // initialize vector clock
         for (Integer id : Da_proc.getProcesses().keySet()) {
             vectorClockSend.put(id, new AtomicInteger(0));
-            //vectorClockRecv.put(id, new AtomicInteger(0));
         }
 
         // start threads for incoming UDP packets

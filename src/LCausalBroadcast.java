@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LCausalBroadcast implements Runnable {
 
-    // messages delivered by URB
+    // Messages delivered by URB
     public static Map<Integer, SortedSet<MessageData>> messagesPerProcess = new HashMap<>();
 
     public static ConcurrentLinkedQueue<MessageData> causalQueue = new ConcurrentLinkedQueue<>();
@@ -21,10 +21,8 @@ public class LCausalBroadcast implements Runnable {
 
         while(Da_proc.isRunning()) {
             MessageData md;
-            // get head of the queue and process it
+            // Get head of the queue and process it
             while ((md = causalQueue.poll()) != null) {
-
-                //System.out.println("LCausal from " + Da_proc.getId() + ": " + md.getSourceID());
 
                 // Store the message
                 messagesPerProcess.get(md.getSourceID()).add(md);
@@ -40,14 +38,8 @@ public class LCausalBroadcast implements Runnable {
                                 if (isVectorClockLessOrEqual(m.getVectorClock(), Da_proc.getVectorClockSend())) {
                                     messageDataIterator.remove();
                                     Da_proc.getVectorClockSend().get(m.getSourceID()).incrementAndGet();
-//                        if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(m.getSourceID())) {
-//                            Da_proc.getVectorClockSend().get(m.getSourceID()).incrementAndGet();
-//                        }
-
                                     OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
                                     keepRunning = true;
-//                        System.out.println("Delivered : " + "d " + m.getSourceID() + " " + m.getMessageID());
-//                        System.out.println(messagesPerProcess.get(i).size());
                                 }
                             }
                         }
