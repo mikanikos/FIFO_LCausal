@@ -35,8 +35,6 @@ public class LCausalBroadcast {
 
                         OutputLogger.writeLog("d " + m.getSourceID() + " " + m.getMessageID());
                         keepRunning = true;
-//                        System.out.println("Delivered : " + "d " + m.getSourceID() + " " + m.getMessageID());
-//                        System.out.println(messagesPerProcess.get(i).size());
                     }
                 }
             }
