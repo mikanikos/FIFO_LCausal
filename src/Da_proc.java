@@ -89,7 +89,7 @@ public class Da_proc {
         // start thread for sending queue
         new Thread(new PerfectLink()).start();
 
-        new LCausalBroadcast();
+        new Thread(new LCausalBroadcast()).start();
 
         // wait user signal to start broadcasting
         while (SignalHandlerUtility.wait_for_start) {
