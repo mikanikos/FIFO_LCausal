@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 // Store all message data that are important for the protocols used
 public class MessageData implements Serializable {
-
 	private static final long serialVersionUID = 1L;
 	// id of the source of the message (creator)
     private int sourceID;

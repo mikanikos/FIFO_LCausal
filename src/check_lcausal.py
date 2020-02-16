@@ -1,5 +1,6 @@
 import sys
 
+
 membership = ""
 nProc = -1
 nMsgs = -1
@@ -12,6 +13,7 @@ delivered = None # to be initialised when CL arguments are parsed
 
 # depends[p][q] = True/False tells whether process p depends on process q
 depends = None # to be initialised when CL arguments are parsed
+
 
 def parseArguments():
     global membership
@@ -36,6 +38,7 @@ def parseArguments():
     delivered = [[[False for j in range (1+nMsgs)] for i in range(1+nProc)] for k in range(1+nProc)]
     depends = [[ False for j in range (1+nProc)] for i in range(1+nProc)]
 
+
 def findDepends():
     global depends
     with open(membership) as memFile:
@@ -48,6 +51,7 @@ def findDepends():
                 depends[p][q] = True
 
     return
+
 
 # causalPast[p][m] contains the causal past of message m from process p UP TO MESSAGE m-1 OF PROCESS p
 # When process p tries to deliver message m from process q, it checks up to message m-1 of process q,
@@ -77,12 +81,14 @@ def findCausalPast():
                     raise Exception("Malformed file:", line)
     return
 
+
 def checkDeliverable(p, q, m):
     for (qp, mp) in causalPast[q][m]:
         if not delivered[p][qp][mp]:
             # print(causalPast[q][m])
             return False
     return True
+
 
 def checkLocal():
     global delivered
@@ -104,6 +110,8 @@ def checkLocal():
                 else:
                     raise Exception("Malformed file", "da_proc_" + p + ".out:", line)
     return True, "bravo"
+
+
 
 parseArguments()
 findDepends()

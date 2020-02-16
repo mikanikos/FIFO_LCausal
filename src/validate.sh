@@ -116,7 +116,7 @@ do
 done
 
 # check logs for correctness
-./check_output.sh 1 3 5 
-python3 check_lcausal.py membership 100 
+./check_output.sh 1 3 5
+python3 check_lcausal.py membership 100
 
 echo "Correctness test done."

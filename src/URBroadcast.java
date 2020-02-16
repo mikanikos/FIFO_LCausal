@@ -48,12 +48,8 @@ public class URBroadcast implements Runnable {
 
         // Check if I received a majority of acknowledgement: if yes, URB delivers it
         if (ackMessages.getOrDefault(ms, new AtomicInteger(0)).get() > (Da_proc.getNumProcesses() / 2)) {
-            if (delivered.putIfAbsent(ms, true) == null) {
-                if (Da_proc.getProcesses().get(Da_proc.getId()).getDependencies().contains(ms.getSourceID()) &&  Da_proc.getId() != ms.getSourceID())
-                    LCausalBroadcast.causalQueue.add(message);
-                else
-                    FIFOBroadcast.fifoQueue.add(ms);
-            }
+            if (delivered.putIfAbsent(ms, true) == null)
+            	LCausalBroadcast.causalQueue.add(message);
         }
     }
 

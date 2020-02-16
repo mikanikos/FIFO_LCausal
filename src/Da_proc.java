@@ -81,7 +81,7 @@ public class Da_proc {
         // start thread for sending queue
         new Thread(new PerfectLink()).start();
 
-        new LCausalBroadcast();
+        new Thread(new LCausalBroadcast()).start();
 
         // start thread for sending queue
         new Thread(new LCausalBroadcast()).start();
